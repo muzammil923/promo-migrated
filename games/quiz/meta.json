@@ -1,0 +1,21 @@
+{
+  "name": "Quiz",
+  "category": "quiz",
+  "description": "Interactive quiz with multiple question types — multiple choice, opinion, checkbox, short answer",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": true,
+  "hasDataBOPage": true,
+  "hasBOLogsPage": true,
+  "hasRedemptionLogsPage": true,
+  "settingsTable": "quiz_settings",
+  "builderRoute": "quiz-builder",
+  "playerRoute": "quiz",
+  "dataRoute": "quiz-data",
+  "dataBORoute": "quiz-bo-data",
+  "boLogsRoute": "quiz-bo-logs",
+  "redemptionLogsRoute": "quiz-redemption-logs",
+  "tags": ["quiz", "trivia", "education", "survey"],
+  "difficulty": "medium"
+}

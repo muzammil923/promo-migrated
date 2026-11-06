@@ -1,0 +1,17 @@
+{
+  "name": "Rock Paper Scissors",
+  "category": "rps",
+  "description": "The timeless duel — beat the AI over multiple rounds",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "rps_settings",
+  "builderRoute": "rps-builder",
+  "playerRoute": "rps",
+  "tags": ["casual", "luck", "classic"],
+  "difficulty": "easy"
+}

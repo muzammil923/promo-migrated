@@ -1,0 +1,66 @@
+# PromoGames - Robots.txt
+# https://www.promogames.in
+
+User-agent: *
+Allow: /
+Disallow: /play/*?*
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /bo/
+Disallow: /player/
+Disallow: /_next/
+Disallow: /assets/private/
+
+# AI Search Crawlers — ALLOW for GEO
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Omgilibot
+Allow: /
+
+User-agent: YouBot
+Allow: /
+
+# Block harmful/scraping bots
+User-agent: CCBot
+Disallow: /
+
+User-agent: semrush
+Allow: /
+
+User-agent: AhrefsBot
+Allow: /
+
+User-agent: DotBot
+Allow: /
+
+# Allow crawling of static assets
+User-agent: *
+Allow: /assets/
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# Sitemaps
+Sitemap: https://www.promogames.in/sitemap.xml

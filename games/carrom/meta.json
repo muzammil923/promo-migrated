@@ -1,0 +1,17 @@
+{
+  "name": "Carrom",
+  "category": "Carrom",
+  "description": "Classic carrom board game — flick the striker to pocket all your coins",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "Carrom_settings",
+  "builderRoute": "Carrom-builder",
+  "playerRoute": "carrom",
+  "tags": ["board", "physics", "classic"],
+  "difficulty": "medium"
+}

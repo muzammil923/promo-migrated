@@ -1,0 +1,263 @@
+/* Global Theme Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Light Theme */
+[data-theme='light'] {
+  --bg: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --surface: #ffffff;
+  --surface2: #f5f5f5;
+  --border: #e5e7eb;
+  --border-light: #f3f4f6;
+  
+  --text: #1a1a1a;
+  --text2: #6b7280;
+  --text3: #9ca3af;
+  
+  --primary: #a855f7;
+  --primary-hover: #9333ea;
+  --primary-light: #f3e8ff;
+  --primary-bg: rgba(168, 85, 247, 0.1);
+  
+  --accent: #ec4899;
+  --accent-light: #fce7f3;
+  
+  --success: #22c55e;
+  --success-bg: #dcfce7;
+  --success-border: #86efac;
+  
+  --warning: #f59e0b;
+  --warning-bg: #fef3c7;
+  --warning-border: #fcd34d;
+  
+  --error: #ef4444;
+  --error-bg: #fee2e2;
+  --error-border: #fca5a5;
+
+  /* Chip / badge pastels */
+  --chip-primary-bg: rgba(168, 85, 247, 0.12);
+  --chip-primary-fg: #7c3aed;
+  --chip-green-bg: #dcfce7;
+  --chip-green-fg: #15803d;
+  --chip-amber-bg: #fef3c7;
+  --chip-amber-fg: #b45309;
+  --chip-orange-bg: #fff7ed;
+  --chip-orange-fg: #c2410c;
+  --chip-rose-bg: #fdf2f8;
+  --chip-rose-fg: #be185d;
+  --chip-blue-bg: #dbeafe;
+  --chip-blue-fg: #1e40af;
+  --chip-cyan-bg: #ecfeff;
+  --chip-cyan-fg: #0e7490;
+  --chip-red-bg: #fee2e2;
+  --chip-red-fg: #991b1b;
+  --chip-neutral-bg: #f3f6f9;
+  --chip-neutral-fg: #4b5563;
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Builder-local token aliases (map to global theme tokens) */
+  --gb-bg:        var(--bg-secondary);
+  --gb-surface:   var(--surface);
+  --gb-surface2:  var(--surface2);
+  --gb-border:    var(--border);
+  --gb-border2:   var(--border-light);
+  --gb-primary:   var(--primary);
+  --gb-primary-d: var(--primary-hover);
+  --gb-primary-g: var(--primary-bg);
+  --gb-success:   var(--success);
+  --gb-danger:    var(--error);
+  --gb-radius:    12px;
+  --gb-radius-sm: 8px;
+  --gb-radius:    12px;
+  --gb-radius-sm: 8px;
+  --gb-card:      var(--surface);
+  --gb-primary-bg: var(--primary-bg);
+  --gb-card:      var(--surface);
+  --gb-primary-bg: var(--primary-bg);
+  --gb-text:      var(--text);
+  --gb-text2:     var(--text2);
+  --gb-text3:     var(--text3);
+  --gb-shadow:    var(--shadow);
+  --gb-shadow-md: var(--shadow-lg);
+}
+
+/* Dark Theme */
+[data-theme='dark'] {
+  --bg: #0f0d18;
+  --bg-secondary: #16131f;
+  --surface: #1d1a28;
+  --surface2: #262233;
+  --border: #312c44;
+  --border-light: #3f3953;
+  
+  --text: #f2f1f8;
+  --text2: #aaa6bd;
+  --text3: #736f8a;
+  
+  --primary: #a855f7;
+  --primary-hover: #c084fc;
+  --primary-light: #34105f;
+  --primary-bg: rgba(168, 85, 247, 0.16);
+  
+  --accent: #ec4899;
+  --accent-light: #5b0f66;
+  
+  --success: #4ade80;
+  --success-bg: #132e20;
+  --success-border: #1f5c39;
+  
+  --warning: #fbbf24;
+  --warning-bg: #36260f;
+  --warning-border: #7c5207;
+  
+  --error: #f87171;
+  --error-bg: #3f1515;
+  --error-border: #8a2424;
+
+  /* Chip / badge pastels (dark-tinted) */
+  --chip-primary-bg: rgba(168, 85, 247, 0.2);
+  --chip-primary-fg: #c9a6fa;
+  --chip-green-bg: #132e20;
+  --chip-green-fg: #4ade80;
+  --chip-amber-bg: #36260f;
+  --chip-amber-fg: #fbbf24;
+  --chip-orange-bg: #3a2412;
+  --chip-orange-fg: #f3a662;
+  --chip-rose-bg: #3b1a2e;
+  --chip-rose-fg: #f28fb4;
+  --chip-blue-bg: #182642;
+  --chip-blue-fg: #92b3f7;
+  --chip-cyan-bg: #0f2b33;
+  --chip-cyan-fg: #63d3ea;
+  --chip-red-bg: #3e1c1c;
+  --chip-red-fg: #f49090;
+  --chip-neutral-bg: #2a2533;
+  --chip-neutral-fg: #b6b1c8;
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6);
+
+  /* Builder-local token aliases (so builders can map to global theme) */
+  --gb-bg:        var(--bg-secondary);
+  --gb-surface:   var(--surface);
+  --gb-surface2:  var(--surface2);
+  --gb-border:    var(--border);
+  --gb-border2:   var(--border-light);
+  --gb-primary:   var(--primary);
+  --gb-primary-d: var(--primary-hover);
+  --gb-primary-g: var(--primary-bg);
+  --gb-success:   var(--success);
+  --gb-danger:    var(--error);
+  --gb-text:      var(--text);
+  --gb-text2:     var(--text2);
+  --gb-text3:     var(--text3);
+  --gb-shadow:    var(--shadow);
+  --gb-shadow-md: var(--shadow-lg);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: var(--transition);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.page-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+  color: var(--text2);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.loader-spin {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Logo spin loader (shared site-wide loader) ── */
+.logo-loader-img {
+  display: block;
+  animation: logo-spin 1.2s linear infinite;
+}
+
+@keyframes logo-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text3);
+}
+
+/* ── Builder upload error UX (shared across all game-builder pages) ── */
+/* Red border around a faulty image-upload field */
+.gb-img-error {
+  border: 2px solid #dc2626 !important;
+  border-radius: 8px;
+  padding: 6px;
+  background: rgba(220, 38, 38, 0.05);
+}
+.gb-img-error-msg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+}
+/* Red dot on a tab that contains a field with an upload error (VS Code style) */
+.gb-tab-err-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #dc2626;
+  margin-left: 6px;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.18);
+  vertical-align: middle;
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Breakout",
+  "category": "breakout",
+  "description": "Classic brick breaker — control the paddle and destroy all bricks",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "breakout_settings",
+  "builderRoute": "breakout-builder",
+  "playerRoute": "breakout",
+  "tags": ["arcade", "paddle", "bricks"],
+  "difficulty": "easy"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Sudoku",
+  "category": "sudoku",
+  "description": "Fill the grid so every row, column, and box contains 1-9",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "sudoku_settings",
+  "builderRoute": "sudoku-builder",
+  "playerRoute": "sudoku",
+  "tags": ["puzzle", "numbers", "logic"],
+  "difficulty": "hard"
+}

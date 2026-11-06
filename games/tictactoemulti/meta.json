@@ -1,0 +1,17 @@
+{
+  "name": "Tic Tac Toe Multiplayer",
+  "category": "tictactoemultiplayer",
+  "description": "Play tic tac toe with friends online or locally",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "tictactoe_multi_settings",
+  "builderRoute": "tictactoemultiplayer-builder",
+  "playerRoute": "tictactoemultiplayer",
+  "tags": ["strategy", "multiplayer", "online"],
+  "difficulty": "easy"
+}

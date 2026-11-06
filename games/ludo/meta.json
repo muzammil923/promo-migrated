@@ -1,0 +1,17 @@
+{
+  "name": "Ludo",
+  "category": "ludo",
+  "description": "Classic board game — roll dice and race your tokens to the center",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "ludo_settings",
+  "builderRoute": "ludo-builder",
+  "playerRoute": "ludo",
+  "tags": ["board", "dice", "multiplayer"],
+  "difficulty": "easy"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Screw & Reveal",
+  "category": "screw",
+  "description": "Unscrew blocks and sort them by color to reveal the hidden image",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "screw_settings",
+  "builderRoute": "screw-builder",
+  "playerRoute": "screw",
+  "tags": ["puzzle", "sorting", "relaxing"],
+  "difficulty": "easy"
+}

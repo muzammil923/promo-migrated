@@ -1,0 +1,17 @@
+{
+  "name": "Tower Building",
+  "category": "tower",
+  "description": "Time your taps to stack blocks and build the highest tower",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "tower_settings",
+  "builderRoute": "tower-builder",
+  "playerRoute": "tower",
+  "tags": ["arcade", "timing", "tower"],
+  "difficulty": "easy"
+}

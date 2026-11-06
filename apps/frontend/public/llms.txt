@@ -1,0 +1,24 @@
+# PromoGames
+
+> PromoGames is a gamified marketing platform: businesses launch branded quiz,
+> crossword, spin-the-wheel and 30+ mini-game campaigns, while players earn
+> PromoCoins, climb monthly leaderboards and redeem real rewards. No-code
+> game builders, instant shareable play links, and a public arcade of free
+> browser games.
+
+## Public pages
+
+- [Home](https://www.promogames.in/): landing page with featured games and how the platform works.
+- [Arcade](https://www.promogames.in/arcade): play all free browser mini-games; scores and rewards are saved for logged-in players.
+- [Game categories](https://www.promogames.in/games/free-online-games): browsable category hub for puzzle, action, word, multiplayer and more game types.
+- [Leaderboard](https://www.promogames.in/leaderboard): monthly player ranking by Promo Coins earned.
+- [For business](https://www.promogames.in/business): launch gamified marketing campaigns for your brand or venue.
+- [Company](https://www.promogames.in/company): about the PromoGames team.
+- [Terms & Conditions](https://www.promogames.in/terms): usage terms.
+- [Privacy Policy](https://www.promogames.in/privacy): data and privacy practices.
+
+## For AI agents
+
+- Game play URLs follow the pattern `/play/{game-slug}/{client-slug}`.
+- Player accounts use passwordless email OTP login; progress, coins and best scores persist per account.
+- The API base path is `/api`; public endpoints include `/api/play/play-page-games` and `/api/leaderboard`.

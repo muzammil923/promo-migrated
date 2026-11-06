@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Screw & Reveal - Premium Casual Game</title>
+    <style>
+        :root {
+            --bg-dark: #1a0f08;
+            --panel-bg: #4a2f1a;
+            --panel-border: #8a5a34;
+            --text-gold: #ffd700;
+            --text-light: #ffffff;
+            --btn-green: #4caf50;
+            --btn-blue: #2196f3;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --wood-table: #e3b57c;
+            --wood-table-dark: #c88f4f;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #140c06;
+            font-family: var(--font-main);
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 480px;
+            height: 100%;
+            max-height: 850px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.85);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at 50% 30%, var(--wood-table) 0%, var(--wood-table-dark) 100%);
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 1;
+        }
+
+        /* BULLETPROOF MODAL CONTAINER SYSTEM */
+        .modal-layer-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999; /* Force above absolutely everything else */
+            display: none; /* Controlled strictly via JavaScript block/none display values */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-layer-wrapper.active {
+            display: flex;
+        }
+
+        .modal-backdrop {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+        }
+
+        .modal-window {
+            position: relative;
+            width: 85%;
+            background: linear-gradient(135deg, #6e4a2a 0%, #2a1810 100%);
+            border: 4px solid var(--panel-border);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            text-align: center;
+            transform: scale(1);
+            animation: popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        h1, h2 {
+            color: var(--text-gold);
+            text-shadow: 2px 2px 0px #000;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #76c77a, #388e3c);
+            border: none;
+            border-bottom: 5px solid #2e7d32;
+            color: white;
+            padding: 14px 32px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            transition: transform 0.05s;
+            margin: 10px;
+            display: inline-block;
+            position: relative;
+            z-index: 10000; /* Force buttons to capture taps natively */
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+            border-bottom-width: 2px;
+            margin-top: 13px;
+            margin-bottom: 7px;
+        }
+
+        .btn-blue {
+            background: linear-gradient(to bottom, #42a5f5, #1976d2);
+            border-bottom-color: #1565c0;
+        }
+
+        .grid-levels {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .level-node {
+            background: #4a2f1a;
+            border: 2px solid #8a5a34;
+            border-radius: 14px;
+            padding: 12px 0;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: inset 0 0 6px rgba(255,255,255,0.2), 0 3px 6px rgba(0,0,0,0.3);
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .hud-buttons {
+            position: absolute;
+            bottom: max(25px, env(safe-area-inset-bottom));
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding: 0 20px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .hud-icon-btn {
+            pointer-events: auto;
+            background: linear-gradient(to bottom, #6e4a2a, #2a1810);
+            border: 2px solid var(--panel-border);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .hud-icon-btn:active {
+            transform: scale(0.9);
+        }
+
+        .hud-icon-btn span {
+            font-size: 20px;
+        }
+
+        .hud-icon-btn label {
+            font-size: 10px;
+            font-weight: bold;
+            color: #bfa6e6;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="hud-buttons">
+        <div class="hud-icon-btn" id="btnRestartHUD">
+            <span>🔄</span>
+            <label>RESTART</label>
+        </div>
+        <div class="hud-icon-btn" id="btnMenuHUD">
+            <span>🏠</span>
+            <label>MENU</label>
+        </div>
+    </div>
+
+    <div class="modal-layer-wrapper active" id="layerMainMenu">
+        <div class="modal-backdrop"></div>
+        <div class="modal-window">
+            <h1>SCREW & REVEAL</h1>
+            <p style="margin-bottom: 25px; color: #ccbadd; font-weight: 500;">UNSCREW • PLACE • REVEAL</p>
+            <button class="btn" id="btnPlay">PLAY</button><br>
+            <button class="btn btn-blue" id="btnLevelSelect">LEVELS</button>
+            <button class="btn btn-blue" id="btnSettings">SETTINGS</button>
+        </div>
+    </div>
+
+    <div class="modal-layer-wrapper" id="layerLevelSelect">
+        <div class="modal-backdrop"></div>
+        <div class="modal-window">
+            <h2>SELECT LEVEL</h2>
+            <div class="grid-levels" id="levelGrid"></div>
+            <button class="btn btn-blue" style="margin-top:20px;" id="btnBackMenu">BACK</button>
+        </div>
+    </div>
+
+    <div class="modal-layer-wrapper" id="layerSettings">
+        <div class="modal-backdrop"></div>
+        <div class="modal-window">
+            <h2>SETTINGS</h2>
+            <div style="text-align:left; margin: 25px auto; width: 60%; font-size: 18px; line-height: 2.5em;">
+                <label style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>🎵 Sound FX</span>
+                    <input type="checkbox" id="chkSFX" checked style="width:20px; height:20px;">
+                </label>
+            </div>
+            <button class="btn" id="btnSaveSettings">SAVE</button>
+        </div>
+    </div>
+
+    <div class="modal-layer-wrapper" id="layerGameOver">
+        <div class="modal-backdrop"></div>
+        <div class="modal-window">
+            <h1 style="color:#ff6b5c;">GAME OVER</h1>
+            <div style="font-size: 40px; margin: 10px 0;">😖</div>
+            <p id="txtGameOverReason" style="margin-bottom: 20px; color: #fff; font-size: 16px;">No space left to place the screw.</p>
+            <button class="btn" id="btnGameOverRetry">TRY AGAIN</button>
+            <button class="btn btn-blue" id="btnGameOverHome">HOME</button>
+        </div>
+    </div>
+
+    <div class="modal-layer-wrapper" id="layerVictory">
+        <div class="modal-backdrop"></div>
+        <div class="modal-window">
+            <h1>COMPLETE!</h1>
+            <div style="font-size: 48px; color: var(--text-gold); margin: 10px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.5)">★★★</div>
+            <p id="txtReward" style="margin-bottom: 20px; color: #fff; font-size: 18px;">+150 Coins Collected</p>
+            <button class="btn" id="btnNextLevel">NEXT LEVEL</button>
+            <button class="btn btn-blue" id="btnVictoryHome">HOME</button>
+        </div>
+    </div>
+
+    <!-- GAME COMPLETE MODAL FOR ALL 10 LEVELS -->
+    <div class="modal-layer-wrapper" id="layerGameComplete">
+        <div class="modal-backdrop"></div>
+        <div class="modal-window">
+            <h1>THANK YOU!</h1>
+            <div style="font-size: 48px; color: var(--text-gold); margin: 10px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.5)">🏆</div>
+            <p style="margin-bottom: 15px; color: #fff; font-size: 18px; line-height: 1.5;">You have successfully completed all 10 levels!<br>Thank you for playing Screw & Reveal!</p>
+            <p id="txtFinalScore" style="margin-bottom: 20px; color: var(--text-gold); font-size: 20px; font-weight: bold;"></p>
+            <button class="btn" id="btnGameCompleteReplay">PLAY AGAIN</button>
+            <button class="btn btn-blue" id="btnGameCompleteHome">MAIN MENU</button>
+        </div>
+    </div>
+
+    <!-- RESTART CONFIRMATION MODAL -->
+    <div class="modal-layer-wrapper" id="layerRestartConfirm">
+        <div class="modal-backdrop"></div>
+        <div class="modal-window">
+            <h2>RESTART?</h2>
+            <div style="font-size: 44px; margin: 10px 0;">🔄</div>
+            <p style="margin-bottom: 20px; color: #fff; font-size: 16px; line-height: 1.5;">Do you really want to restart?<br>Your current progress will be lost.</p>
+            <button class="btn" id="btnRestartConfirmYes">YES, RESTART</button>
+            <button class="btn btn-blue" id="btnRestartConfirmNo">CANCEL</button>
+        </div>
+    </div>
+</div>
+
+<script>
+class Vector2 {
+    constructor(x = 0, y = 0) { this.x = x; this.y = y; }
+    set(x, y) { this.x = x; this.y = y; return this; }
+    add(v) { this.x += v.x; this.y += v.y; return this; }
+    sub(v) { this.x -= v.x; this.y -= v.y; return this; }
+    mult(n) { this.x *= n; this.y *= n; return this; }
+    mag() { return Math.sqrt(this.x * this.x + this.y * this.y); }
+    dot(v) { return this.x * v.x + this.y * v.y; }
+    cross(v) { return this.x * v.y - this.y * v.x; }
+    rotate(angle) {
+        const nx = this.x * Math.cos(angle) - this.y * Math.sin(angle);
+        const ny = this.x * Math.sin(angle) + this.y * Math.cos(angle);
+        this.x = nx; this.y = ny; return this;
+    }
+    copy() { return new Vector2(this.x, this.y); }
+    dist(v) { return Math.sqrt((this.x - v.x)**2 + (this.y - v.y)**2); }
+}
+
+class AudioManager {
+    constructor() { this.ctx = null; this.sfxEnabled = true; }
+    init() {
+        if (!this.ctx) {
+            try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+            catch (e) { this.ctx = null; }
+        }
+    }
+    playTone(freq, type, duration, volume) {
+        if (!this.sfxEnabled) return;
+        this.init();
+        try {
+            let osc = this.ctx.createOscillator();
+            let gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, this.ctx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(); osc.stop(this.ctx.currentTime + duration);
+        } catch(e) {}
+    }
+    playNoiseBurst(centerFreq, duration, volume, q) {
+        if (!this.sfxEnabled) return;
+        this.init();
+        try {
+            const bufferSize = Math.max(1, Math.floor(this.ctx.sampleRate * duration));
+            const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+            const noise = this.ctx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = this.ctx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(centerFreq, this.ctx.currentTime);
+            filter.Q.value = q;
+            const gain = this.ctx.createGain();
+            gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(this.ctx.destination);
+            noise.start();
+        } catch (e) {}
+    }
+    playUnscrew() {
+        let now = 0;
+        for (let i = 0; i < 7; i++) {
+            const freq = 2200 - i * 190;
+            setTimeout(() => this.playNoiseBurst(freq, 0.045, 0.4, 14), now);
+            now += 26;
+        }
+        setTimeout(() => this.playTone(560, 'triangle', 0.06, 0.18), now + 15);
+    }
+    playScrewIn() {
+        let now = 0;
+        for (let i = 0; i < 6; i++) {
+            const freq = 900 + i * 220;
+            setTimeout(() => this.playNoiseBurst(freq, 0.045, 0.4, 14), now);
+            now += 26;
+        }
+        setTimeout(() => this.playTone(150, 'sine', 0.12, 0.35), now + 15);
+    }
+    playHang() { this.playTone(140, 'sawtooth', 0.2, 0.18); }
+    playClick() { this.playTone(550, 'sine', 0.04, 0.25); }
+    playDrop() { this.playTone(90, 'triangle', 0.35, 0.5); }
+    playSelect() { this.playTone(700, 'square', 0.05, 0.15); }
+    playFail() {
+        let now = 0;
+        [392, 329.63, 261.63].forEach((f) => {
+            setTimeout(() => this.playTone(f, 'sawtooth', 0.3, 0.3), now);
+            now += 120;
+        });
+    }
+    playWin() {
+        let now = 0;
+        [523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+            setTimeout(() => this.playTone(f, 'sine', 0.4, 0.35), now);
+            now += 100;
+        });
+    }
+    playBump() { this.playTone(220, 'square', 0.05, 0.2); }
+}
+
+class ParticleSystem {
+    constructor() { this.particles = []; }
+    spawn(x, y, color, count = 12) {
+        for (let i = 0; i < count; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let s = Math.random() * 4 + 1.5;
+            this.particles.push({
+                x, y, vx: Math.cos(angle) * s, vy: Math.sin(angle) * s,
+                radius: Math.random() * 3 + 2, alpha: 1, life: 1.0, decay: Math.random() * 0.03 + 0.015, color
+            });
+        }
+    }
+    update() {
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            let p = this.particles[i];
+            p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.life -= p.decay; p.alpha = Math.max(0, p.life);
+            if (p.life <= 0) this.particles.splice(i, 1);
+        }
+    }
+    draw(ctx) {
+        ctx.save();
+        for (let p of this.particles) {
+            ctx.globalAlpha = p.alpha; ctx.fillStyle = p.color;
+            ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.restore();
+    }
+}
+
+class Plank {
+    constructor(id, x, y, width, height, angle, colorIndex = 0) {
+        this.id = id;
+        this.pos = new Vector2(x, y);
+        this.width = width;
+        this.height = height;
+        this.angle = angle;
+        
+        const colors = [
+            { base: '#e0aa5f', light: '#f4d8a0', dark: '#a86f2f', grain: '#8a5a26' },
+            { base: '#c17a3d', light: '#e6ae72', dark: '#8a4f22', grain: '#6b3a17' },
+            { base: '#a05a2c', light: '#c9884f', dark: '#6e3815', grain: '#552c10' },
+            { base: '#7a4222', light: '#a5693f', dark: '#4a260f', grain: '#38200e' }
+        ];
+        this.color = colors[colorIndex % colors.length];
+        this.vel = new Vector2(0, 0);
+        this.angularVel = 0;
+        this.isStatic = true; 
+        this.opacity = 1.0;
+        this.wobbleTimer = 0;
+        this.localPivot = null; 
+        this.lastAnchorId = null;
+        this.playedDropSound = false;
+    }
+
+    containsPoint(pt) {
+        let localPt = pt.copy().sub(this.pos);
+        localPt.rotate(-this.angle);
+        return (Math.abs(localPt.x) <= this.width / 2 && Math.abs(localPt.y) <= this.height / 2);
+    }
+
+    containsPointAt(pt, candidatePos, candidateAngle, margin = 0) {
+        let localPt = pt.copy().sub(candidatePos);
+        localPt.rotate(-candidateAngle);
+        return (Math.abs(localPt.x) <= this.width / 2 + margin && Math.abs(localPt.y) <= this.height / 2 + margin);
+    }
+
+    wobble() { this.wobbleTimer = 15; }
+
+    update(screws, holes, audioManager) {
+        if (this.wobbleTimer > 0) this.wobbleTimer--;
+
+        let activeSupports = [];
+        for (let s of screws) {
+            if (s.plankIds.includes(this.id) && s.holeId !== null) {
+                let hole = holes.find(h => h.id === s.holeId);
+                if (hole) activeSupports.push({ id: s.id, pos: hole.pos });
+            }
+        }
+
+        if (activeSupports.length > 0) {
+            this.isStatic = true;
+            this.vel.set(0, 0);
+
+            if (activeSupports.length === 1) {
+                let anchor = activeSupports[0];
+
+                if (!this.localPivot || this.lastAnchorId !== anchor.id) {
+                    let offset = anchor.pos.copy().sub(this.pos);
+                    this.localPivot = offset.rotate(-this.angle);
+                    this.lastAnchorId = anchor.id;
+                    this.angularVel += (Math.random() < 0.5 ? -1 : 1) * (0.025 + Math.random() * 0.02);
+                    audioManager.playHang();
+                }
+
+                let gravity = 0.45;
+                let worldPivot = this.localPivot.copy().rotate(this.angle).add(this.pos);
+                let r = this.pos.copy().sub(worldPivot);
+
+                let torque = r.cross(new Vector2(0, gravity));
+
+                let candidateAngularVel = this.angularVel + torque * 0.0005;
+                candidateAngularVel *= 0.92;
+                let candidateAngle = this.angle + candidateAngularVel;
+
+                const basePos = this.pos;
+                const poseAt = (angle) => {
+                    let wp = this.localPivot.copy().rotate(angle).add(basePos);
+                    let corr = anchor.pos.copy().sub(wp);
+                    return basePos.copy().add(corr);
+                };
+
+                const SCREW_MARGIN = 15;
+                const hitsObstacle = (pos, angle) => {
+                    for (let s of screws) {
+                        if (s.id === anchor.id) continue;
+                        if (s.holeId === null) continue;
+                        if (s.plankIds.includes(this.id)) continue;
+                        let hole = holes.find(h => h.id === s.holeId);
+                        if (!hole) continue;
+                        if (this.containsPointAt(hole.pos, pos, angle, SCREW_MARGIN)) return true;
+                    }
+                    return false;
+                };
+
+                let candidatePos = poseAt(candidateAngle);
+
+                if (hitsObstacle(candidatePos, candidateAngle)) {
+                    let safeAngle = this.angle;
+                    let safePos = basePos;
+                    let unsafeAngle = candidateAngle;
+                    for (let iter = 0; iter < 10; iter++) {
+                        let midAngle = (safeAngle + unsafeAngle) / 2;
+                        let midPos = poseAt(midAngle);
+                        if (hitsObstacle(midPos, midAngle)) {
+                            unsafeAngle = midAngle;
+                        } else {
+                            safeAngle = midAngle;
+                            safePos = midPos;
+                        }
+                    }
+
+                    if (Math.abs(this.angularVel) > 0.012 && !this.justBumped) {
+                        audioManager.playBump();
+                    }
+                    this.justBumped = true;
+
+                    this.angle = safeAngle;
+                    this.pos = safePos;
+                    this.angularVel = -this.angularVel * 0.22;
+                    if (Math.abs(this.angularVel) < 0.0015) this.angularVel = 0;
+                } else {
+                    this.justBumped = false;
+                    this.angularVel = candidateAngularVel;
+                    this.angle = candidateAngle;
+                    this.pos = candidatePos;
+                }
+            } else {
+                this.angularVel = 0;
+                this.localPivot = null;
+                this.lastAnchorId = null;
+            }
+        } else {
+            if (this.isStatic) {
+                this.isStatic = false;
+                this.localPivot = null;
+                this.lastAnchorId = null;
+                this.vel.set(Math.random() * 2 - 1, -1);
+                this.angularVel = Math.random() * 0.04 - 0.02;
+            }
+            this.vel.y += 0.45;
+            this.pos = this.pos.copy().add(this.vel);
+            this.angle += this.angularVel;
+
+            if (this.pos.y > 750 && !this.playedDropSound) {
+                audioManager.playDrop();
+                this.playedDropSound = true;
+            }
+            if (this.pos.y > 900) this.opacity -= 0.05;
+        }
+    }
+
+    draw(ctx) {
+        if (this.opacity <= 0) return;
+        ctx.save();
+        ctx.globalAlpha = this.opacity;
+        ctx.translate(this.pos.x, this.pos.y);
+        
+        let visualAngle = this.angle;
+        if (this.wobbleTimer > 0) visualAngle += Math.sin(this.wobbleTimer * 1.5) * 0.04;
+        ctx.rotate(visualAngle);
+
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+        ctx.shadowBlur = 12;
+        ctx.shadowOffsetX = 3;
+        ctx.shadowOffsetY = 7;
+
+        let cornerRadius = Math.min(14, this.height / 3);
+        const hw = this.width / 2, hh = this.height / 2;
+
+        let fillGrad = ctx.createLinearGradient(-hw, -hh, hw, hh);
+        fillGrad.addColorStop(0, this.color.light);
+        fillGrad.addColorStop(0.45, this.color.base);
+        fillGrad.addColorStop(1, this.color.dark);
+        ctx.fillStyle = fillGrad;
+        ctx.beginPath();
+        ctx.roundRect(-hw, -hh, this.width, this.height, cornerRadius);
+        ctx.fill();
+        ctx.shadowColor = 'transparent';
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(-hw, -hh, this.width, this.height, cornerRadius);
+        ctx.clip();
+        ctx.strokeStyle = this.color.grain;
+        ctx.lineCap = 'round';
+        let seed = (this.id * 37) % 100;
+        for (let i = 0; i < 6; i++) {
+            let offset = -hh + (i + 0.5) * (this.height / 6);
+            let wobble = 6 + ((seed + i * 17) % 9);
+            ctx.globalAlpha = (0.10 + ((seed + i * 5) % 10) * 0.01) * this.opacity;
+            ctx.lineWidth = 1.4 + ((seed + i) % 3) * 0.5;
+            ctx.beginPath();
+            ctx.moveTo(-hw - 4, offset);
+            ctx.quadraticCurveTo(0, offset + wobble - (this.height / 12), hw + 4, offset - wobble / 2);
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 0.22 * this.opacity;
+        ctx.lineWidth = 1.5;
+        [[-hw * 0.4, hh * 0.15], [hw * 0.35, -hh * 0.2]].forEach(([kx, ky], idx) => {
+            if ((seed + idx * 13) % 3 !== 0) return;
+            ctx.beginPath();
+            ctx.ellipse(kx, ky, 6, 4, 0.4, 0, Math.PI * 2);
+            ctx.stroke();
+        });
+        ctx.restore();
+
+        ctx.globalAlpha = 0.28 * this.opacity;
+        let sheen = ctx.createLinearGradient(-hw, -hh, -hw + this.width * 0.5, -hh + this.height * 0.5);
+        sheen.addColorStop(0, 'rgba(255,255,255,0.55)');
+        sheen.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = sheen;
+        ctx.beginPath();
+        ctx.roundRect(-hw, -hh, this.width, this.height, cornerRadius);
+        ctx.fill();
+        ctx.globalAlpha = 1.0 * this.opacity;
+
+        ctx.strokeStyle = 'rgba(40, 20, 8, 0.55)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(-hw, -hh, this.width, this.height, cornerRadius);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255, 235, 200, 0.35)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.roundRect(-hw + 2.5, -hh + 2.5, this.width - 5, this.height - 5, Math.max(2, cornerRadius - 2));
+        ctx.stroke();
+
+        ctx.restore();
+    }
+}
+
+class Hole {
+    constructor(id, x, y) { this.id = id; this.pos = new Vector2(x, y); }
+    draw(ctx, isHighlighted = false) {
+        ctx.save();
+        ctx.translate(this.pos.x, this.pos.y);
+
+        let rimGrad = ctx.createRadialGradient(-2, -3, 8, 0, 0, 18);
+        rimGrad.addColorStop(0, isHighlighted ? '#6b5223' : '#5c3d1f');
+        rimGrad.addColorStop(1, isHighlighted ? '#3a2a10' : '#2c1c0d');
+        ctx.fillStyle = rimGrad;
+        ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.fill();
+
+        if (isHighlighted) {
+            ctx.shadowColor = '#ffe066';
+            ctx.shadowBlur = 14;
+        }
+
+        let wellGrad = ctx.createRadialGradient(-1, -2, 1, 0, 0, 13);
+        wellGrad.addColorStop(0, '#241407');
+        wellGrad.addColorStop(1, '#0e0704');
+        ctx.fillStyle = wellGrad;
+        ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowColor = 'transparent';
+
+        ctx.strokeStyle = isHighlighted ? '#ffd700' : 'rgba(0,0,0,0.5)';
+        ctx.lineWidth = isHighlighted ? 2.5 : 2;
+        ctx.beginPath(); ctx.arc(0, 0, 13, 0, Math.PI * 2); ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255,220,170,0.25)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(0, 0, 17, 0, Math.PI * 2); ctx.stroke();
+
+        ctx.restore();
+    }
+}
+
+class Screw {
+    constructor(id, holeId, plankIds = []) {
+        this.id = id; this.holeId = holeId; this.plankIds = plankIds;
+    }
+
+    drawWasher(ctx, pos, planks) {
+        if (!this.plankIds || this.plankIds.length === 0) return;
+        let attached = planks.filter(p => this.plankIds.includes(p.id));
+        if (attached.length === 0) return;
+
+        let washerRadius = attached.length > 1 ? 23 : 19;
+
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        let grad = ctx.createRadialGradient(-2, -3, 2, 0, 0, washerRadius);
+        grad.addColorStop(0, attached[0].color.light);
+        grad.addColorStop(1, attached[0].color.dark);
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, washerRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(40,20,8,0.5)';
+        ctx.lineWidth = attached.length > 1 ? 2.5 : 2;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    draw(ctx, pos, isSelected = false) {
+        ctx.save();
+        ctx.translate(pos.x, pos.y);
+        
+        if (isSelected) {
+            ctx.shadowColor = '#ffd700';
+            ctx.shadowBlur = 20;
+            ctx.scale(1.15, 1.15);
+        } else {
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetY = 4;
+        }
+
+        const R = 15;
+        let grad = ctx.createRadialGradient(-4, -5, 2, 0, 0, R);
+        grad.addColorStop(0, '#fbe6b8');
+        grad.addColorStop(0.55, '#e0ac5c');
+        grad.addColorStop(1, '#a86f2f');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
+        ctx.shadowColor = 'transparent';
+
+        ctx.strokeStyle = 'rgba(60,32,10,0.7)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(120,74,25,0.5)';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.arc(0, 0, R - 3.5, 0, Math.PI * 2); ctx.stroke();
+
+        ctx.save();
+        ctx.rotate(Math.PI / 4);
+        [0, Math.PI / 2].forEach(rot => {
+            ctx.save();
+            ctx.rotate(rot);
+            let slotGrad = ctx.createLinearGradient(0, -3.5, 0, 3.5);
+            slotGrad.addColorStop(0, 'rgba(255,235,200,0.35)');
+            slotGrad.addColorStop(0.5, 'rgba(50,28,10,0.85)');
+            slotGrad.addColorStop(1, 'rgba(20,10,4,0.9)');
+            ctx.fillStyle = slotGrad;
+            ctx.beginPath();
+            ctx.roundRect(-R + 3, -3, (R - 3) * 2, 6, 2.5);
+            ctx.fill();
+            ctx.restore();
+        });
+        ctx.restore();
+
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.ellipse(-5, -6, 3.2, 1.8, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+
+        ctx.restore();
+    }
+}
+
+const LEVEL_DATABASE = [];
+const TOTAL_LEVELS = 10;
+
+/* ─── Board coordinate system ───────────────────────────────────────────────
+   Every level is authored in a fixed DESIGN board space: a 432 x 480 world
+   board spanning x:24..456 and y:130..610 (the original desktop board).
+   Levels store hole positions in that design space.  At load time they are
+   converted to the ACTUAL board — whose width tracks the viewport — so every
+   arrangement stays perfectly centered and proportionally scaled on mobile,
+   tablet and desktop.  Planks reference the two holes they span (`a`/`b`);
+   their center, width and angle are derived from those holes so they always
+   stay attached and correctly rotated. */
+const BOARD_DESIGN = {
+    left: 24,
+    top: 130,
+    right: 456,      // left + 432 (design board width)
+    bottom: 610,     // top + 480 (design board height)
+    get centerX() { return (this.left + this.right) / 2; },
+    get centerY() { return (this.top + this.bottom) / 2; }
+};
+
+function seedLevels() {
+    LEVEL_DATABASE.push({
+        holes: [{id:0, x:140, y:200}, {id:1, x:140, y:380}, {id:2, x:320, y:380}, {id:3, x:230, y:560}, {id:4, x:140, y:560}],
+        planks: [
+            {id:100, a:0, b:1, colorIdx:0},
+            {id:101, a:0, b:2, colorIdx:1}
+        ],
+        screws: [
+            {id:200, holeId:0, plankIds:[100, 101]}, 
+            {id:201, holeId:1, plankIds:[100]},
+            {id:203, holeId:2, plankIds:[101]}
+        ]
+    });
+
+    LEVEL_DATABASE.push({
+        holes: [{id:0, x:140, y:280}, {id:1, x:340, y:280}, {id:2, x:240, y:460}, {id:3, x:140, y:460}],
+        planks: [
+            {id:100, a:0, b:1, colorIdx:0},
+            {id:101, a:1, b:2, colorIdx:1}
+        ],
+        screws: [
+            {id:200, holeId:0, plankIds:[100]},
+            {id:201, holeId:1, plankIds:[100, 101]}, 
+            {id:202, holeId:2, plankIds:[101]}
+        ]
+    });
+
+    function mulberry32(seed) {
+        return function() {
+            seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+            let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    for (let i = 3; i <= TOTAL_LEVELS; i++) {
+        let rng = mulberry32(i * 7919 + 13);
+        let holes = []; let planks = []; let screws = [];
+        let rows = 4; let cols = 3; let hId = 0;
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                holes.push({ id: hId++, x: 140 + c * 100, y: 220 + r * 90 });
+            }
+        }
+        const holeAt = (r, c) => holes[r * cols + c];
+        // Design-space plank geometry, derived purely from its two holes so it
+        // never drifts from them (angle/width are recomputed with hole layouts).
+        const plankGeom = (holeA, holeB) => {
+            const dx = holeB.x - holeA.x;
+            const dy = holeB.y - holeA.y;
+            return {
+                w: Math.sqrt(dx * dx + dy * dy) + 36,
+                h: 38,
+                angle: Math.atan2(dy, dx)
+            };
+        };
+        const plankFromHoles = (holeA, holeB, colorIdx) => ({
+            a: holeA.id,
+            b: holeB.id,
+            colorIdx
+        });
+
+        const chainTemplates = [
+            (r) => { const t = Math.floor(r() * 2); return [[t, 2], [t + 1, 0], [t + 2, 2]]; },
+            (r) => { const t = Math.floor(r() * 2); return [[t, 0], [t + 1, 2], [t + 2, 0]]; },
+            () => [[0, 0], [0, 2], [3, 2]],
+            () => [[0, 2], [0, 0], [3, 0]],
+            () => [[0, 0], [1, 2], [2, 0], [3, 2]],
+            () => [[0, 2], [1, 0], [2, 2], [3, 0]],
+            'CROSS',
+            () => [[0, 0], [1, 1], [2, 2], [3, 1]]
+        ];
+        const template = chainTemplates[(i - 3) % chainTemplates.length];
+
+        if (template === 'CROSS') {
+            planks.push({ id: 100, ...plankFromHoles(holeAt(0, 1), holeAt(3, 1), i % 4) });
+            planks.push({ id: 101, ...plankFromHoles(holeAt(1, 0), holeAt(1, 2), (i + 1) % 4) });
+        } else {
+            const path = template(rng);
+            for (let seg = 0; seg < path.length - 1; seg++) {
+                const [r1, c1] = path[seg];
+                const [r2, c2] = path[seg + 1];
+                planks.push({ id: 100 + seg, ...plankFromHoles(holeAt(r1, c1), holeAt(r2, c2), (i + seg) % 4) });
+            }
+        }
+        let screwId = 200;
+        let holeInfo = holes.map(hole => {
+            let intersectingPlankIds = [];
+            planks.forEach(plank => {
+                let plankA = holes.find(h => h.id === plank.a);
+                let plankB = holes.find(h => h.id === plank.b);
+                let geom = plankGeom(plankA, plankB);
+                let px = (plankA.x + plankB.x) / 2;
+                let py = (plankA.y + plankB.y) / 2;
+                let dx = hole.x - px; let dy = hole.y - py;
+                let localX = dx * Math.cos(-geom.angle) - dy * Math.sin(-geom.angle);
+                let localY = dx * Math.sin(-geom.angle) + dy * Math.cos(-geom.angle);
+                if (Math.abs(localX) <= geom.w / 2 && Math.abs(localY) <= geom.h / 2) {
+                    intersectingPlankIds.push(plank.id);
+                }
+            });
+            return { hole, intersectingPlankIds };
+        });
+
+        holeInfo.forEach(({ hole, intersectingPlankIds }) => {
+            if (intersectingPlankIds.length > 0) {
+                screws.push({ id: screwId++, holeId: hole.id, plankIds: intersectingPlankIds });
+            }
+        });
+
+        let emptyHoles = holes.filter(h => !screws.some(s => s.holeId === h.id));
+        if (emptyHoles.length === 0) screws.pop();
+        LEVEL_DATABASE.push({ holes, planks, screws });
+    }
+}
+seedLevels();
+
+class ScrewRevealEngine {
+    constructor(canvasId) {
+        this.canvas = document.getElementById(canvasId);
+        this.ctx = this.canvas.getContext('2d');
+        this.audio = new AudioManager();
+        this.particles = new ParticleSystem();
+        
+        this.currentLevelIndex = 0; 
+        this.unlockedLevel = 0; // Tracks the highest unlocked level sequentially
+        this.planks = []; this.holes = []; this.screws = [];
+        this.movesLeft = 25;
+        this.gameState = 'MENU'; 
+        this.score = 0; 
+        this.selectedScrew = null; 
+        this.simPaused = false; 
+
+        this.initResizing();
+        this.initInput();
+        this.loadLevel(this.currentLevelIndex);
+        requestAnimationFrame(() => this.tick());
+    }
+
+    initResizing() {
+        const resize = () => {
+            const scale = window.devicePixelRatio || 1;
+            this.canvas.width = this.canvas.parentElement.clientWidth * scale;
+            this.canvas.height = this.canvas.parentElement.clientHeight * scale;
+            this.ctx.setTransform(1, 0, 0, 1, 0, 0); 
+            this.ctx.scale(scale, scale);
+            this.renderWidth = this.canvas.parentElement.clientWidth;
+            this.renderHeight = this.canvas.parentElement.clientHeight;
+            const s = Math.max(0.15, Math.min(1, (this.renderHeight - 215) / 480));
+            this.sceneScale = s;
+            this.sceneDx = (this.renderWidth / 2) * (1 - s);
+            this.sceneDy = 115 - 130 * s;
+            this.recenterForSize();
+        };
+        window.addEventListener('resize', resize);
+        resize();
+    }
+
+    /* ─── Board-relative layout system ────────────────────────────────────────
+       The board is the single coordinate parent: all holes, screws, planks and
+       hitboxes are derived from the board's current usable area.  Level data
+       lives in BOARD_DESIGN space; it is mapped onto the live board with equal
+       padding on every side, so any size/amount of holes stays centered.    */
+
+    boardGeometry() {
+        return { left: 24, top: 130, width: Math.max(48, this.renderWidth - 48), height: 480 };
+    }
+
+    // Map a level's design coordinates onto the live board, keeping the
+    // arrangement centered (leftPadding === rightPadding, and vertically too).
+    layoutHolePositions(schema) {
+        const designW = BOARD_DESIGN.right - BOARD_DESIGN.left;
+        const designH = BOARD_DESIGN.bottom - BOARD_DESIGN.top;
+
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (const h of schema.holes) {
+            if (h.x < minX) minX = h.x;
+            if (h.x > maxX) maxX = h.x;
+            if (h.y < minY) minY = h.y;
+            if (h.y > maxY) maxY = h.y;
+        }
+        // Align the arrangement's bounding-box center with the board center.
+        const shiftX = BOARD_DESIGN.centerX - (minX + maxX) / 2;
+        const shiftY = BOARD_DESIGN.centerY - (minY + maxY) / 2;
+
+        const board = this.boardGeometry();
+        const out = {};
+        for (const h of schema.holes) {
+            const fx = (h.x + shiftX - BOARD_DESIGN.left) / designW;
+            const fy = (h.y + shiftY - BOARD_DESIGN.top) / designH;
+            out[h.id] = new Vector2(board.left + fx * board.width, board.top + fy * board.height);
+        }
+        return out;
+    }
+
+    // Rebuild holes/screws/planks from the current level design + live board.
+    rebuildLevelLayout() {
+        const schema = this.levelDesign;
+        if (!schema) return;
+        const pos = this.layoutHolePositions(schema);
+
+        this.holes = schema.holes.map(h => new Hole(h.id, pos[h.id].x, pos[h.id].y));
+        this.planks = schema.planks.map(p => {
+            const a = pos[p.a], b = pos[p.b];
+            const dx = b.x - a.x, dy = b.y - a.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            return new Plank(
+                p.id,
+                (a.x + b.x) / 2, (a.y + b.y) / 2,
+                dist + 36, 38, Math.atan2(dy, dx), p.colorIdx
+            );
+        });
+        this.screws = schema.screws.map(s => new Screw(s.id, s.holeId, [...s.plankIds]));
+    }
+
+    // Re-center existing entities when the viewport changes without resetting
+    // gameplay. Falls/released planks keep their dynamic physics state.
+    recenterForSize() {
+        if (!this.levelDesign) return;
+        const schema = this.levelDesign;
+        const pos = this.layoutHolePositions(schema);
+
+        for (const h of this.holes) {
+            const p = pos[h.id];
+            if (p) h.pos.set(p.x, p.y);
+        }
+        for (let i = 0; i < this.planks.length; i++) {
+            const plank = this.planks[i];
+            const def = schema.planks[i];
+            if (!def) continue;
+            // Only pristine (still-attached) planks follow their holes exactly.
+            if (plank.isStatic && !plank.playedDropSound && plank.opacity === 1) {
+                const a = pos[def.a], b = pos[def.b];
+                if (a && b) {
+                    const dx = b.x - a.x, dy = b.y - a.y;
+                    plank.pos.set((a.x + b.x) / 2, (a.y + b.y) / 2);
+                    plank.width = Math.sqrt(dx * dx + dy * dy) + 36;
+                    plank.angle = Math.atan2(dy, dx);
+                    plank.vel.set(0, 0);
+                    plank.angularVel = 0;
+                }
+            }
+        }
+    }
+
+    loadLevel(index) {
+        this.currentLevelIndex = index;
+        const schema = LEVEL_DATABASE[index] || LEVEL_DATABASE[0];
+        this.levelDesign = schema;
+
+        this.rebuildLevelLayout();
+
+        this.movesLeft = 25; 
+        this.selectedScrew = null;
+    }
+
+    initInput() {
+        const handleInteraction = (clientX, clientY) => {
+            if (this.gameState !== 'PLAYING') return;
+            const rect = this.canvas.getBoundingClientRect();
+            const clickPos = new Vector2((clientX - rect.left - this.sceneDx) / this.sceneScale, (clientY - rect.top - this.sceneDy) / this.sceneScale);
+
+            for (let hole of this.holes) {
+                if (hole.pos.dist(clickPos) < 26) {
+                    let occupyingScrew = this.screws.find(s => s.holeId === hole.id);
+                    if (occupyingScrew) {
+                        let vacantHoles = this.holes.filter(h => this.isHoleVacant(h));
+                        if (vacantHoles.length === 0) {
+                            this.audio.playFail();
+                            this.showGameOver("No space to place the screw!");
+                            return;
+                        }
+                        this.selectedScrew = occupyingScrew;
+                        this.audio.playUnscrew();
+                        return;
+                    } else if (this.isHoleVacant(hole)) {
+                        if (this.selectedScrew) {
+                            this.audio.playScrewIn();
+                            this.particles.spawn(hole.pos.x, hole.pos.y, '#ffd700', 10);
+                            
+                            for (let p of this.planks) {
+                                if (this.selectedScrew.plankIds.includes(p.id)) p.localPivot = null;
+                            }
+
+                            let newPlankIds = [];
+                            this.planks.forEach(p => {
+                                if (p.opacity > 0 && p.containsPoint(hole.pos)) newPlankIds.push(p.id);
+                            });
+
+                            this.selectedScrew.holeId = hole.id;
+                            this.selectedScrew.plankIds = newPlankIds;
+                            this.selectedScrew = null; 
+                            this.movesLeft--;
+                            
+                            this.score += 10;
+
+                            if (this.movesLeft <= 0) {
+                                this.audio.playFail();
+                                this.showGameOver("Out of moves!");
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+
+            for (let p of this.planks) {
+                if (p.containsPoint(clickPos) && p.opacity > 0) {
+                    p.wobble();
+                    this.audio.playSelect();
+                    break;
+                }
+            }
+        };
+
+        this.canvas.addEventListener('mousedown', (e) => handleInteraction(e.clientX, e.clientY));
+        this.canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleInteraction(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: false });
+    }
+
+    isHoleVacant(hole) {
+        if (this.screws.some(s => s.holeId === hole.id)) return false;
+        if (this.planks.some(p => p.opacity > 0 && p.containsPoint(hole.pos))) return false;
+        return true;
+    }
+
+    showGameOver(reason) {
+        this.gameState = 'FAILED';
+        this.selectedScrew = null;
+        document.getElementById('txtGameOverReason').textContent = reason;
+        document.getElementById('layerGameOver').classList.add('active');
+    }
+
+    checkWinCondition() {
+        if (this.gameState !== 'PLAYING') return;
+        let allClear = this.planks.every(p => !p.isStatic && p.pos.y > 850);
+        if (allClear) {
+            this.gameState = 'COMPLETE';
+            this.audio.playWin();
+            
+            this.score += 100;
+            
+            // Unlock next level sequentially if applicable
+            if (this.currentLevelIndex >= this.unlockedLevel && this.currentLevelIndex < TOTAL_LEVELS - 1) {
+                this.unlockedLevel = this.currentLevelIndex + 1;
+            }
+            
+            setTimeout(() => {
+                if (this.currentLevelIndex >= TOTAL_LEVELS - 1) {
+                    document.getElementById('txtFinalScore').textContent = `Final Score: ${this.score}`;
+                    document.getElementById('layerGameComplete').classList.add('active');
+                } else {
+                    document.getElementById('layerVictory').classList.add('active');
+                }
+            }, 500);
+        }
+    }
+
+    checkDeadlock() {
+        if (this.gameState !== 'PLAYING' || !this.selectedScrew) return;
+        let stillHasSpace = this.holes.some(h => this.isHoleVacant(h));
+        if (!stillHasSpace) {
+            this.audio.playFail();
+            this.showGameOver("No space to place the screw!");
+        }
+    }
+
+    tick() {
+        this.particles.update();
+        if (this.gameState === 'PLAYING' && !this.simPaused) {
+            for (let p of this.planks) p.update(this.screws, this.holes, this.audio);
+            this.checkWinCondition();
+            this.checkDeadlock();
+        }
+        
+        this.ctx.clearRect(0, 0, this.renderWidth, this.renderHeight);
+        this.drawHUD();
+
+        this.ctx.save();
+        this.ctx.translate(this.sceneDx, this.sceneDy);
+        this.ctx.scale(this.sceneScale, this.sceneScale);
+
+        let board = this.boardGeometry();
+        let boardGrad = this.ctx.createLinearGradient(0, board.top, 0, board.top + board.height);
+        boardGrad.addColorStop(0, '#7a5230');
+        boardGrad.addColorStop(1, '#5c3a1e');
+        this.ctx.fillStyle = boardGrad;
+        this.ctx.strokeStyle = 'rgba(40,20,8,0.6)';
+        this.ctx.lineWidth = 4;
+        this.ctx.beginPath(); 
+        this.ctx.roundRect(board.left, board.top, board.width, board.height, 24); 
+        this.ctx.fill();
+        this.ctx.stroke();
+
+        this.ctx.globalAlpha = 0.08;
+        this.ctx.strokeStyle = '#000';
+        this.ctx.lineWidth = 1;
+        for (let gy = 150; gy < 600; gy += 14) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(board.left + 6, gy);
+            this.ctx.lineTo(board.left + board.width - 6, gy);
+            this.ctx.stroke();
+        }
+        this.ctx.globalAlpha = 1;
+
+        for (let h of this.holes) {
+            let isVacantAndHighlighted = (this.selectedScrew !== null) && this.isHoleVacant(h);
+            h.draw(this.ctx, isVacantAndHighlighted);
+        }
+        
+        for (let p of this.planks) p.draw(this.ctx);
+
+        for (let s of this.screws) {
+            if (s.holeId !== null) {
+                let h = this.holes.find(x => x.id === s.holeId);
+                if (h) s.drawWasher(this.ctx, h.pos, this.planks);
+            }
+        }
+
+        for (let s of this.screws) { 
+            if (s.holeId !== null) { 
+                let h = this.holes.find(x => x.id === s.holeId); 
+                if (h) s.draw(this.ctx, h.pos, this.selectedScrew === s); 
+            } 
+        }
+        
+        this.particles.draw(this.ctx);
+        this.ctx.restore();
+        
+        if (this.selectedScrew && this.gameState === 'PLAYING') {
+            this.ctx.save();
+            this.ctx.font = 'bold 16px sans-serif';
+            this.ctx.textAlign = 'center';
+            const msg = '📌 SCREW SELECTED! TAP VACANT HOLE.';
+            const w = this.ctx.measureText(msg).width;
+            this.ctx.fillStyle = 'rgba(20,10,4,0.55)';
+            this.ctx.beginPath();
+            this.ctx.roundRect(this.renderWidth / 2 - w / 2 - 14, this.renderHeight - 128, w + 28, 30, 15);
+            this.ctx.fill();
+            this.ctx.fillStyle = '#ffd700';
+            this.ctx.fillText(msg, this.renderWidth / 2, this.renderHeight - 108);
+            this.ctx.restore();
+        }
+
+        requestAnimationFrame(() => this.tick());
+    }
+
+    drawHUD() {
+        let ctx = this.ctx;
+        const MARGIN = 24;
+        ctx.save();
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+
+        ctx.fillStyle = '#ffd700';
+        ctx.font = 'bold 26px sans-serif';
+        ctx.fillText(`LEVEL ${this.currentLevelIndex + 1}`, MARGIN, 56);
+
+        ctx.fillStyle = '#b5a4cb';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(`MOVES REMAINING: ${this.movesLeft}`, MARGIN, 78);
+
+        const scoreText = `SCORE: ${this.score}`;
+        ctx.font = 'bold 15px sans-serif';
+        const textWidth = ctx.measureText(scoreText).width;
+        const pillPadX = 18;
+        const pillHeight = 36;
+        const pillWidth = textWidth + pillPadX * 2;
+        const pillX = this.renderWidth - MARGIN - pillWidth;
+        const pillY = 24;
+
+        ctx.fillStyle = '#2a1810';
+        ctx.strokeStyle = '#6e4a2a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(pillX, pillY, pillWidth, pillHeight, pillHeight / 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffd700';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(scoreText, pillX + pillWidth / 2, pillY + pillHeight / 2 + 1);
+
+        ctx.restore();
+    }
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    let engine = new ScrewRevealEngine('gameCanvas');
+    window.engine = engine;
+
+    document.getElementById('btnPlay').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        engine.simPaused = false;
+        document.getElementById('layerMainMenu').classList.remove('active');
+        engine.gameState = 'PLAYING';
+    });
+
+    document.getElementById('btnLevelSelect').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        document.getElementById('layerMainMenu').classList.remove('active');
+        let grid = document.getElementById('levelGrid');
+        grid.innerHTML = '';
+        for(let i = 0; i < TOTAL_LEVELS; i++) {
+            let node = document.createElement('div');
+            node.className = 'level-node';
+            
+            // Check if level is unlocked sequentially
+            let isUnlocked = i <= engine.unlockedLevel;
+            
+            if (isUnlocked) {
+                node.innerText = i + 1;
+                node.style.opacity = '1';
+                node.style.cursor = 'pointer';
+                node.onclick = (evt) => {
+                    evt.stopPropagation();
+                    engine.audio.playClick();
+                    engine.simPaused = false;
+                    document.getElementById('layerLevelSelect').classList.remove('active');
+                    engine.loadLevel(i);
+                    engine.gameState = 'PLAYING';
+                };
+            } else {
+                node.innerText = '🔒';
+                node.style.opacity = '0.4';
+                node.style.cursor = 'not-allowed';
+                node.onclick = (evt) => {
+                    evt.stopPropagation();
+                    engine.audio.playFail();
+                };
+            }
+            grid.appendChild(node);
+        }
+        document.getElementById('layerLevelSelect').classList.add('active');
+    });
+
+    document.getElementById('btnBackMenu').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        document.getElementById('layerLevelSelect').classList.remove('active');
+        document.getElementById('layerMainMenu').classList.add('active');
+    });
+
+    document.getElementById('btnSettings').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        document.getElementById('layerMainMenu').classList.remove('active');
+        document.getElementById('layerSettings').classList.add('active');
+    });
+
+    document.getElementById('btnSaveSettings').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        engine.audio.sfxEnabled = document.getElementById('chkSFX').checked;
+        document.getElementById('layerSettings').classList.remove('active');
+        document.getElementById('layerMainMenu').classList.add('active');
+    });
+
+    document.getElementById('btnNextLevel').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        document.getElementById('layerVictory').classList.remove('active');
+        engine.loadLevel((engine.currentLevelIndex + 1) % TOTAL_LEVELS);
+        engine.gameState = 'PLAYING';
+    });
+
+    document.getElementById('btnVictoryHome').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        document.getElementById('layerVictory').classList.remove('active');
+        document.getElementById('layerMainMenu').classList.add('active');
+        engine.gameState = 'MENU';
+    });
+
+    document.getElementById('btnGameCompleteReplay').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        document.getElementById('layerGameComplete').classList.remove('active');
+        engine.loadLevel(0);
+        engine.gameState = 'PLAYING';
+    });
+
+    document.getElementById('btnGameCompleteHome').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        document.getElementById('layerGameComplete').classList.remove('active');
+        document.getElementById('layerMainMenu').classList.add('active');
+        engine.gameState = 'MENU';
+    });
+
+    document.getElementById('btnGameOverRetry').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        document.getElementById('layerGameOver').classList.remove('active');
+        engine.loadLevel(engine.currentLevelIndex);
+        engine.gameState = 'PLAYING';
+    });
+
+    document.getElementById('btnGameOverHome').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        document.getElementById('layerGameOver').classList.remove('active');
+        document.getElementById('layerMainMenu').classList.add('active');
+        engine.gameState = 'MENU';
+    });
+
+    document.getElementById('btnRestartHUD').addEventListener('click', () => {
+        engine.audio.playClick();
+        engine.simPaused = true;
+        document.getElementById('layerRestartConfirm').classList.add('active');
+    });
+
+    document.getElementById('btnRestartConfirmYes').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        engine.simPaused = false;
+        ['layerVictory', 'layerGameOver', 'layerGameComplete', 'layerLevelSelect', 'layerRestartConfirm']
+            .forEach(id => document.getElementById(id).classList.remove('active'));
+        engine.loadLevel(engine.currentLevelIndex);
+        engine.gameState = 'PLAYING';
+        engine.score = 0;
+    });
+
+    document.getElementById('btnRestartConfirmNo').addEventListener('click', (e) => {
+        e.stopPropagation();
+        engine.audio.playClick();
+        engine.simPaused = false;
+        document.getElementById('layerRestartConfirm').classList.remove('active');
+    });
+
+    document.getElementById('btnMenuHUD').addEventListener('click', () => {
+        engine.audio.playClick();
+        document.getElementById('layerMainMenu').classList.add('active');
+        engine.gameState = 'MENU';
+    });
+});
+</script>
+</body>
+</html>

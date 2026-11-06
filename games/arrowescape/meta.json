@@ -1,0 +1,17 @@
+{
+  "name": "Arrow Escape",
+  "category": "arrowescape",
+  "description": "Navigate through a grid-based maze using arrows to reach the exit",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "arrowescape_settings",
+  "builderRoute": "arrowescape-builder",
+  "playerRoute": "arrowescape",
+  "tags": ["puzzle", "maze", "grid"],
+  "difficulty": "medium"
+}

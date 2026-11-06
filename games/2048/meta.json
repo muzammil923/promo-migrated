@@ -1,0 +1,17 @@
+{
+  "name": "2048",
+  "category": "2048",
+  "description": "Slide tiles to merge numbers — reach the 2048 tile",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "game2048_settings",
+  "builderRoute": "2048-builder",
+  "playerRoute": "2048",
+  "tags": ["puzzle", "numbers", "strategy"],
+  "difficulty": "medium"
+}

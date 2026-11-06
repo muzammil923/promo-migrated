@@ -1,0 +1,17 @@
+{
+  "name": "Car Launch",
+  "category": "carlaunch",
+  "description": "Configure your dream car and launch it down the drag strip",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "carlaunch_settings",
+  "builderRoute": "carlaunch-builder",
+  "playerRoute": "carlaunch",
+  "tags": ["racing", "cars", "arcade"],
+  "difficulty": "easy"
+}

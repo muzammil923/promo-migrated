@@ -1,0 +1,17 @@
+{
+  "name": "Snake and Ladder",
+  "category": "snakeandladder",
+  "description": "Classic board game — roll dice, climb ladders, and avoid snakes",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "snake_ladder_settings",
+  "builderRoute": "snakeandladder-builder",
+  "playerRoute": "snakeandladder",
+  "tags": ["board", "dice", "luck"],
+  "difficulty": "easy"
+}

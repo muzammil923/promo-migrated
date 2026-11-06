@@ -1,0 +1,25 @@
+module.exports = {
+  table: 'space_settings',
+  fields: [
+    'primary_color', 'secondary_color', 'accent_color', 'bg_color', 'bg_image_url',
+    'star_density', 'enemy_speed', 'player_speed', 'laser_speed',
+    'intro_text', 'intro_text_color', 'outro_text', 'outro_text_color',
+    'time_limit_seconds', 'show_timer',
+    'sound_laser_id', 'sound_explosion_id', 'sound_hit_id', 'sound_powerup_id',
+  ],
+  uploads: ['bg_image_url'],
+  defaults: {
+    primary_color: '#3b82f6',
+    secondary_color: '#1e40af',
+    accent_color: '#fbbf24',
+    bg_color: '#0f172a',
+    star_density: 50,
+    enemy_speed: 2,
+    player_speed: 4,
+    laser_speed: 6,
+    time_limit_seconds: 0,
+    show_timer: 1,
+    intro_text_color: '#e2e8f0',
+    outro_text_color: '#e2e8f0',
+  },
+};

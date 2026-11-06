@@ -1,0 +1,1 @@
+../../../../../games/chess/playerpage.dart

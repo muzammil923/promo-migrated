@@ -1,0 +1,8 @@
+name: promogames_engine
+description: Shared engine contract + game config for all PromoGames native games.
+publish_to: 'none'
+environment:
+  sdk: ^3.8.1
+dependencies:
+  flutter:
+    sdk: flutter

@@ -1,0 +1,17 @@
+{
+  "name": "Simon Says",
+  "category": "simon",
+  "description": "Repeat the growing color sequence — how far can your memory go",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "simon_settings",
+  "builderRoute": "simon-builder",
+  "playerRoute": "simon",
+  "tags": ["memory", "sequence", "classic"],
+  "difficulty": "medium"
+}

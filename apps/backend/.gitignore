@@ -1,0 +1,8 @@
+node_modules/
+.env
+uploads/images/*
+uploads/sounds/*
+!uploads/images/.gitkeep
+!uploads/sounds/.gitkeep
+*.log
+server.js.backup

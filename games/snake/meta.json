@@ -1,0 +1,21 @@
+{
+  "name": "Snake",
+  "category": "snake",
+  "description": "Classic snake game — guide the snake to eat food without hitting walls or yourself",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": true,
+  "hasDataBOPage": true,
+  "hasBOLogsPage": true,
+  "hasRedemptionLogsPage": true,
+  "settingsTable": "snake_settings",
+  "builderRoute": "snake-builder",
+  "playerRoute": "snake",
+  "dataRoute": "snake-data",
+  "dataBORoute": "snake-bo-data",
+  "boLogsRoute": "snake-bo-logs",
+  "redemptionLogsRoute": "snake-redemption-logs",
+  "tags": ["arcade", "classic", "grid"],
+  "difficulty": "easy"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Chess",
+  "category": "chess",
+  "description": "Classic chess game — play against AI or challenge friends in multiplayer",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "chess_settings",
+  "builderRoute": "chess-builder",
+  "playerRoute": "chess",
+  "tags": ["strategy", "board", "multiplayer"],
+  "difficulty": "hard"
+}

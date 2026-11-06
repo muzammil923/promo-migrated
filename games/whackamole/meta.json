@@ -1,0 +1,17 @@
+{
+  "name": "Whack-a-Mole",
+  "category": "whackamole",
+  "description": "Whack moles as they pop up — fast reflexes win",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "whackamole_settings",
+  "builderRoute": "whackamole-builder",
+  "playerRoute": "whackamole",
+  "tags": ["arcade", "reflex", "casual"],
+  "difficulty": "easy"
+}

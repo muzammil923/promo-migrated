@@ -1,0 +1,17 @@
+{
+  "name": "Catch",
+  "category": "catch",
+  "description": "Catch falling objects with your basket — don't miss too many",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "catch_settings",
+  "builderRoute": "catch-builder",
+  "playerRoute": "catch",
+  "tags": ["arcade", "falling", "reflex"],
+  "difficulty": "easy"
+}

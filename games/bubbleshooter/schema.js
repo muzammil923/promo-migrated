@@ -1,0 +1,26 @@
+module.exports = {
+  table: 'bubbleshooter_settings',
+  fields: [
+    'grid_rows', 'grid_cols', 'num_colors', 'difficulty',
+    'heading_1', 'heading_2', 'heading_3', 'description_text',
+    'heading_1_color', 'heading_2_color', 'heading_3_color', 'description_color',
+    'bg_color', 'primary_color', 'font_family',
+    'show_timer', 'time_limit_seconds',
+    'sound_shoot_id', 'sound_pop_id', 'sound_gameover_id',
+    'bg_image_url', 'thankyou_bg_image_url', 'game_logo_url', 'submit_confirm_gif_url',
+    'intro_text', 'intro_text_color', 'outro_text', 'outro_text_color',
+    'submit_button_text', 'submit_button_text_color', 'submit_button_bg_color',
+    'continue_button_text', 'continue_button_text_color', 'continue_button_bg_color',
+    'start_button_text', 'start_button_text_color', 'start_button_bg_color',
+    'thankyou_subtitle', 'thankyou_subtitle_color',
+    'terms_enabled', 'terms_text', 'terms_url', 'meta_description',
+  ],
+  uploads: ['bg_image_url', 'thankyou_bg_image_url', 'game_logo_url', 'submit_confirm_gif_url'],
+  defaults: {
+    grid_rows: 8, grid_cols: 8, num_colors: 5, difficulty: 'medium',
+    bg_color: '#0f172a', primary_color: '#06b6d4', font_family: 'DM Sans',
+    show_timer: 1, time_limit_seconds: 0,
+    heading_1_color: '#1a1a2e', heading_2_color: '#666666',
+    heading_3_color: '#777777', description_color: '#888888',
+  },
+};

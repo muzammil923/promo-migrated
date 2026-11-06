@@ -1,0 +1,21 @@
+{
+  "name": "Word Search",
+  "category": "wordsearch",
+  "description": "Word search puzzle with grid, categories, and hint system",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": true,
+  "hasDataBOPage": true,
+  "hasBOLogsPage": true,
+  "hasRedemptionLogsPage": true,
+  "settingsTable": "wordsearch_settings",
+  "builderRoute": "wordsearch-builder",
+  "playerRoute": "wordsearch",
+  "dataRoute": "wordsearch-data",
+  "dataBORoute": "wordsearch-bo-data",
+  "boLogsRoute": "wordsearch-bo-logs",
+  "redemptionLogsRoute": "wordsearch-redemption-logs",
+  "tags": ["puzzle", "word", "education"],
+  "difficulty": "medium"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Tic Tac Toe",
+  "category": "tictactoe",
+  "description": "Classic tic tac toe — beat the AI in this strategy game",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "tictactoe_settings",
+  "builderRoute": "tictactoe-builder",
+  "playerRoute": "tictactoe",
+  "tags": ["strategy", "classic", "ai"],
+  "difficulty": "easy"
+}

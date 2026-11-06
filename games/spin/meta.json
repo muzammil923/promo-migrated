@@ -1,0 +1,17 @@
+{
+  "name": "Spin Wheel",
+  "category": "spin",
+  "description": "Spin the wheel to win prizes — configurable segments with weighted probabilities",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "spin_settings",
+  "builderRoute": "spin-builder",
+  "playerRoute": "spin",
+  "tags": ["chance", "wheel", "prize"],
+  "difficulty": "easy"
+}

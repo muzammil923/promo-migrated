@@ -1,0 +1,17 @@
+{
+  "name": "Connect 4",
+  "category": "connect4",
+  "description": "Classic Connect 4 — drop discs to connect four in a row against AI or friends",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "connect4_settings",
+  "builderRoute": "connect4-builder",
+  "playerRoute": "connect4",
+  "tags": ["strategy", "board", "two-player"],
+  "difficulty": "easy"
+}

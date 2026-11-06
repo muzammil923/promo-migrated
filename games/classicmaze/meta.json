@@ -1,0 +1,17 @@
+{
+  "name": "Classic Maze",
+  "category": "classicmaze",
+  "description": "Navigate through procedurally generated mazes — collect items and reach the exit",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "maze_settings",
+  "builderRoute": "classicmaze-builder",
+  "playerRoute": "classicmaze",
+  "tags": ["maze", "puzzle", "navigation"],
+  "difficulty": "medium"
+}

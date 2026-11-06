@@ -1,0 +1,17 @@
+{
+  "name": "Reaction Time",
+  "category": "reaction",
+  "description": "Test your reflexes — tap the moment the color changes",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "reaction_settings",
+  "builderRoute": "reaction-builder",
+  "playerRoute": "reaction",
+  "tags": ["reflex", "speed", "casual"],
+  "difficulty": "easy"
+}

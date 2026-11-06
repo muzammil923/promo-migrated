@@ -1,0 +1,17 @@
+{
+  "name": "Tetris",
+  "category": "tetris",
+  "description": "Fit falling tetrominoes together and clear lines",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "tetris_settings",
+  "builderRoute": "tetris-builder",
+  "playerRoute": "tetris",
+  "tags": ["arcade", "blocks", "classic"],
+  "difficulty": "medium"
+}

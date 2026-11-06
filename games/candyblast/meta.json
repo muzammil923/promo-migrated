@@ -1,0 +1,17 @@
+{
+  "name": "Candy Blast",
+  "category": "candyblast",
+  "description": "Match candy pieces to score points — blast through levels with combos",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "candyblast_settings",
+  "builderRoute": "candyblast-builder",
+  "playerRoute": "candyblast",
+  "tags": ["puzzle", "match3", "candy"],
+  "difficulty": "easy"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Space Shooter",
+  "category": "space",
+  "description": "Pilot your ship, dodge enemies, and blast through waves in space",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "space_settings",
+  "builderRoute": "space-builder",
+  "playerRoute": "space",
+  "tags": ["shooter", "arcade", "space"],
+  "difficulty": "medium"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Soundify",
+  "category": "soundify",
+  "description": "Guess the song from a short audio clip — music quiz fun",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "soundify_settings",
+  "builderRoute": "soundify-builder",
+  "playerRoute": "soundify",
+  "tags": ["music", "quiz", "audio"],
+  "difficulty": "medium"
+}

@@ -1,0 +1,17 @@
+{
+  "name": "Tower of Hanoi",
+  "category": "hanoi",
+  "description": "Move the disk stack to another rod following the classic rules",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "hanoi_settings",
+  "builderRoute": "hanoi-builder",
+  "playerRoute": "hanoi",
+  "tags": ["puzzle", "logic", "classic"],
+  "difficulty": "medium"
+}

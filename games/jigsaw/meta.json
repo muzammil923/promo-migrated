@@ -1,0 +1,17 @@
+{
+  "name": "Jigsaw Puzzle",
+  "category": "jigsaw",
+  "description": "Assemble a picture from scattered puzzle pieces",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "jigsaw_settings",
+  "builderRoute": "jigsaw-builder",
+  "playerRoute": "jigsaw",
+  "tags": ["puzzle", "relaxing", "images"],
+  "difficulty": "easy"
+}

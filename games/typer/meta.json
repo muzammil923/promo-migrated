@@ -1,0 +1,17 @@
+{
+  "name": "Speed Typer",
+  "category": "typer",
+  "description": "Type falling words before they hit the ground — test your typing speed and accuracy",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "typer_settings",
+  "builderRoute": "typer-builder",
+  "playerRoute": "typer",
+  "tags": ["typing", "speed", "words"],
+  "difficulty": "medium"
+}

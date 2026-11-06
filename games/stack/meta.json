@@ -1,0 +1,17 @@
+{
+  "name": "Stack",
+  "category": "stack",
+  "description": "Stack blocks precisely as they slide — build the tallest tower",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "stack_settings",
+  "builderRoute": "stack-builder",
+  "playerRoute": "stack",
+  "tags": ["arcade", "timing", "tower"],
+  "difficulty": "easy"
+}

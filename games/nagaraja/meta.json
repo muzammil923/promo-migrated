@@ -1,0 +1,21 @@
+{
+  "name": "Nagaraja",
+  "category": "nagaraja",
+  "description": "Slither-style snake game — steer a majestic serpent, eat customizable gifts and outmaneuver AI snakes to grow",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": true,
+  "hasDataBOPage": true,
+  "hasBOLogsPage": true,
+  "hasRedemptionLogsPage": true,
+  "settingsTable": "nagaraja_settings",
+  "builderRoute": "nagaraja-builder",
+  "playerRoute": "nagaraja",
+  "dataRoute": "nagaraja-data",
+  "dataBORoute": "nagaraja-bo-data",
+  "boLogsRoute": "nagaraja-bo-logs",
+  "redemptionLogsRoute": "nagaraja-redemption-logs",
+  "tags": ["arcade", "snake", "io", "gifts"],
+  "difficulty": "medium"
+}

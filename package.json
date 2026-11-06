@@ -1,0 +1,25 @@
+{
+  "name": "promogames",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PromoGames — quiz, crossword, spin wheel platform",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev -w apps/backend",
+    "dev:frontend": "npm run dev -w apps/frontend",
+    "dev": "npm run dev:backend & npm run dev:frontend",
+    "build:frontend": "npm run build -w apps/frontend",
+    "build": "npm run build:frontend",
+    "start": "node apps/backend/server.js",
+    "init-db": "node apps/backend/config/initDB.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "three": "^0.185.0"
+  }
+}

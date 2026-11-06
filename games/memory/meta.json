@@ -1,0 +1,21 @@
+{
+  "name": "Memory Match",
+  "category": "memory",
+  "description": "Card matching memory game with pairs, custom images, and overlay animations",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": true,
+  "hasDataBOPage": true,
+  "hasBOLogsPage": true,
+  "hasRedemptionLogsPage": true,
+  "settingsTable": "memory_settings",
+  "builderRoute": "memory-builder",
+  "playerRoute": "memory",
+  "dataRoute": "memory-data",
+  "dataBORoute": "memory-bo-data",
+  "boLogsRoute": "memory-bo-logs",
+  "redemptionLogsRoute": "memory-redemption-logs",
+  "tags": ["puzzle", "cards", "memory"],
+  "difficulty": "easy"
+}

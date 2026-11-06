@@ -1,0 +1,17 @@
+{
+  "name": "Word Scramble",
+  "category": "wordscramble",
+  "description": "Unscramble letters to form the correct word — test your vocabulary",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "wordscramble_settings",
+  "builderRoute": "wordscramble-builder",
+  "playerRoute": "wordscramble",
+  "tags": ["word", "puzzle", "vocabulary"],
+  "difficulty": "easy"
+}

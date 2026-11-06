@@ -1,0 +1,17 @@
+{
+  "name": "Pouring",
+  "category": "pouring",
+  "description": "Tilt and pour — fill the cup to the target line without spilling",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "pouring_settings",
+  "builderRoute": "pouring-builder",
+  "playerRoute": "pouring",
+  "tags": ["skill", "physics", "tilt"],
+  "difficulty": "medium"
+}

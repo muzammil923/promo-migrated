@@ -1,0 +1,21 @@
+{
+  "name": "Crossword",
+  "category": "crossword",
+  "description": "Classic crossword puzzle with clues, grid generation, and overlay images",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": true,
+  "hasDataBOPage": true,
+  "hasBOLogsPage": true,
+  "hasRedemptionLogsPage": true,
+  "settingsTable": "crossword_settings",
+  "builderRoute": "crossword-builder",
+  "playerRoute": "crossword",
+  "dataRoute": "crossword-data",
+  "dataBORoute": "crossword-bo-data",
+  "boLogsRoute": "crossword-bo-logs",
+  "redemptionLogsRoute": "crossword-redemption-logs",
+  "tags": ["puzzle", "word", "education"],
+  "difficulty": "medium"
+}

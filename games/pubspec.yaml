@@ -1,0 +1,10 @@
+name: games
+publish_to: 'none'
+environment:
+  sdk: ^3.8.1
+dependencies:
+  flutter:
+    sdk: flutter
+  promogames_engine:
+    path: shared_pkg
+  cached_network_image: ^3.4.1

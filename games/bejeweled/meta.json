@@ -1,0 +1,17 @@
+{
+  "name": "Bejeweled",
+  "category": "bejeweled",
+  "description": "Match-3 puzzle game — swap gems to create combos and score points",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "bejeweled_settings",
+  "builderRoute": "bejeweled-builder",
+  "playerRoute": "bejeweled",
+  "tags": ["puzzle", "match3", "gems"],
+  "difficulty": "easy"
+}

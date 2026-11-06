@@ -1,0 +1,21 @@
+{
+  "name": "Math Challenge",
+  "category": "math",
+  "description": "Speed arithmetic game with progressive difficulty levels",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": true,
+  "hasDataBOPage": true,
+  "hasBOLogsPage": true,
+  "hasRedemptionLogsPage": true,
+  "settingsTable": "math_settings",
+  "builderRoute": "math-builder",
+  "playerRoute": "math",
+  "dataRoute": "math-data",
+  "dataBORoute": "math-bo-data",
+  "boLogsRoute": "math-bo-logs",
+  "redemptionLogsRoute": "math-redemption-logs",
+  "tags": ["puzzle", "education", "arithmetic"],
+  "difficulty": "medium"
+}

@@ -1,0 +1,15 @@
+*.zip
+*.bak
+.DS_Store
+apps/backend/uploads/images/*
+apps/backend/uploads/sounds/*
+!apps/backend/uploads/images/.gitkeep
+!apps/backend/uploads/sounds/.gitkeep
+node_modules/
+*.log
+.dart_tool/
+build/
+.env
+.mimocode
+.vscode/
+.anima/

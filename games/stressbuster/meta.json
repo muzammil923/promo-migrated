@@ -1,0 +1,17 @@
+{
+  "name": "Stress Buster",
+  "category": "stressbuster",
+  "description": "Click and tap to relieve stress — satisfying gameplay with multiple modes",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "stressbuster_settings",
+  "builderRoute": "stressbuster-builder",
+  "playerRoute": "stressbuster",
+  "tags": ["casual", "clicking", "stress-relief"],
+  "difficulty": "easy"
+}

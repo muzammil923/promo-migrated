@@ -1,0 +1,45 @@
+{
+  "summary": {
+    "totalRequests": 400,
+    "successful": 400,
+    "failed": 0,
+    "successRate": 100,
+    "totalTimeMs": 2601,
+    "throughput": 153.78700499807766,
+    "avgResponseTime": 8.46,
+    "minResponseTime": 0,
+    "maxResponseTime": 73
+  },
+  "endpoints": {
+    "Health Check": {
+      "success": 100,
+      "failed": 0,
+      "total": 100,
+      "successRate": 100,
+      "avgResponseTime": 5.5
+    },
+    "System Status": {
+      "success": 100,
+      "failed": 0,
+      "total": 100,
+      "successRate": 100,
+      "avgResponseTime": 3.6
+    },
+    "Games List": {
+      "success": 100,
+      "failed": 0,
+      "total": 100,
+      "successRate": 100,
+      "avgResponseTime": 4.57
+    },
+    "Leaderboard": {
+      "success": 100,
+      "failed": 0,
+      "total": 100,
+      "successRate": 100,
+      "avgResponseTime": 20.17
+    }
+  },
+  "errors": [],
+  "timestamp": "2026-08-13T06:41:44.844Z"
+}

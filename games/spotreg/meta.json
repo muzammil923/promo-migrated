@@ -1,0 +1,17 @@
+{
+  "name": "Spot Registration",
+  "category": "spotregistration",
+  "description": "QR-gated multi-station registration",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "spotreg_settings",
+  "builderRoute": "spotreg-builder",
+  "playerRoute": "spotreg",
+  "tags": ["registration", "health", "camp"],
+  "difficulty": "medium"
+}

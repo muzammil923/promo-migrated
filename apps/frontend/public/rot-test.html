@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html><head><style>body{margin:0;background:#0d0a1a;overflow:hidden}#info{position:fixed;top:10px;left:10px;color:white;font:14px monospace;z-index:99}</style></head>
+<body>
+<div id="info"></div>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d0a1a);
+const camera = new THREE.PerspectiveCamera(32, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 0, 6);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.75));
+scene.add(new THREE.HemisphereLight(0xffffff, 0x3b1a6b, 0.7));
+scene.add(new THREE.DirectionalLight(0xffffff, 1.6).translateX(3).translateY(5).translateZ(6));
+scene.add(new THREE.DirectionalLight(0xffffff, 0.7).translateX(-5).translateY(2).translateZ(4));
+
+const group = new THREE.Group();
+scene.add(group);
+
+const params = new URLSearchParams(location.search);
+const rx = parseFloat(params.get('rx') || '0');
+const ry = parseFloat(params.get('ry') || '0');
+const rz = parseFloat(params.get('rz') || '0');
+document.getElementById('info').textContent = `rotation: [${rx.toFixed(2)}, ${ry.toFixed(2)}, ${rz.toFixed(2)}]`;
+
+new GLTFLoader().load('model/joystick.glb', (gltf) => {
+  const model = gltf.scene;
+  const box = new THREE.Box3().setFromObject(model);
+  const size = new THREE.Vector3();
+  const center = new THREE.Vector3();
+  box.getSize(size);
+  box.getCenter(center);
+  const s = 1.65 / Math.max(size.x, size.y, size.z) || 1;
+  model.position.set(-center.x, -center.y, -center.z);
+  group.add(model);
+  group.scale.setScalar(s);
+  group.rotation.set(rx, ry, rz);
+});
+
+function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
+animate();
+</script>
+</body></html>

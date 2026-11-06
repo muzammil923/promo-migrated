@@ -1,0 +1,17 @@
+{
+  "name": "Minesweeper",
+  "category": "minesweeper",
+  "description": "Clear the grid without detonating hidden mines",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "minesweeper_settings",
+  "builderRoute": "minesweeper-builder",
+  "playerRoute": "minesweeper",
+  "tags": ["puzzle", "logic", "classic"],
+  "difficulty": "medium"
+}

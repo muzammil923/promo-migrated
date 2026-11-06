@@ -1,0 +1,17 @@
+{
+  "name": "Bowling",
+  "category": "bowling",
+  "description": "Classic bowling game — roll strikes and spares across multiple frames",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "bowling_settings",
+  "builderRoute": "bowling-builder",
+  "playerRoute": "bowling",
+  "tags": ["sports", "bowling", "arcade"],
+  "difficulty": "easy"
+}

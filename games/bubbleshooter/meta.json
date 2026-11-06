@@ -1,0 +1,17 @@
+{
+  "name": "Bubble Shooter",
+  "category": "bubbleshooter",
+  "description": "Aim and shoot bubbles to match and pop — clear the board before it fills up",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "bubbleshooter_settings",
+  "builderRoute": "bubbleshooter-builder",
+  "playerRoute": "bubbleshooter",
+  "tags": ["arcade", "bubble", "match"],
+  "difficulty": "medium"
+}

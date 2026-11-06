@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromoGames AI Assistant</title>
+  <style>
+    /* ═══════════════════════════════════════════════════════════
+       PROMOGAMES FLOATING AI MASCOT ASSISTANT
+       A premium, self-contained floating mascot with speech bubble.
+       No frameworks, no external dependencies.
+       ═══════════════════════════════════════════════════════════ */
+
+    /* ── Reset ── */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* ── Mascot Container ── */
+    .pg-mascot {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9990;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .pg-mascot > * {
+      pointer-events: auto;
+    }
+
+    /* ── Mascot Image Wrapper ── */
+    .pg-mascot__img-wrap {
+      position: relative;
+      width: var(--mascot-size, 220px);
+      height: auto;
+      cursor: pointer;
+      animation: pgFloat 4s ease-in-out infinite;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.3));
+    }
+
+    .pg-mascot__img-wrap:hover {
+      transform: scale(1.05);
+    }
+
+    .pg-mascot__img-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* ── Purple Glow Behind Mascot ── */
+    .pg-mascot__glow {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        var(--glow-color, rgba(139, 92, 246, 0.3)) 0%,
+        var(--glow-color-fade, rgba(139, 92, 246, 0.08)) 50%,
+        transparent 70%
+      );
+      pointer-events: none;
+      z-index: -1;
+      animation: pgGlowPulse 3s ease-in-out infinite;
+    }
+
+    /* ── Speech Bubble ── */
+    .pg-bubble {
+      position: relative;
+      max-width: var(--bubble-width, 320px);
+      min-width: 200px;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 20px;
+      padding: 18px 44px 18px 20px;
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        0 2px 8px rgba(0, 0, 0, 0.06),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      opacity: 0;
+      transform: translateY(12px) scale(0.95);
+      transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+    }
+
+    .pg-bubble.visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    /* Bubble tail */
+    .pg-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      right: 40px;
+      width: 20px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.92);
+      border-right: 1px solid rgba(255, 255, 255, 0.6);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+      transform: rotate(45deg);
+      box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Bubble message text */
+    .pg-bubble__msg {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #1a1a2e;
+      font-weight: 500;
+      min-height: 21px;
+      transition: opacity 0.3s ease;
+    }
+
+    .pg-bubble__msg.fading {
+      opacity: 0;
+    }
+
+    /* Close button */
+    .pg-bubble__close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      width: 26px;
+      height: 26px;
+      border: none;
+      background: rgba(0, 0, 0, 0.06);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #666;
+      transition: background 0.2s, color 0.2s;
+      line-height: 1;
+    }
+
+    .pg-bubble__close:hover {
+      background: rgba(0, 0, 0, 0.12);
+      color: #333;
+    }
+
+    /* ── Bounce-in on first appearance ── */
+    .pg-mascot__img-wrap.bounce-in {
+      animation: pgBounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+                 pgFloat 4s ease-in-out 0.6s infinite;
+    }
+
+    /* ═══ KEYFRAMES ═══ */
+
+    @keyframes pgFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pgGlowPulse {
+      0%, 100% { opacity: 0.6; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.08); }
+    }
+
+    @keyframes pgBounceIn {
+      0% { transform: translateY(60px) scale(0.5); opacity: 0; }
+      60% { transform: translateY(-8px) scale(1.05); opacity: 1; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* ═══ RESPONSIVE ═══ */
+
+    @media (max-width: 480px) {
+      .pg-mascot {
+        bottom: 16px;
+        right: 16px;
+      }
+      .pg-mascot__img-wrap {
+        --mascot-size: 160px;
+      }
+      .pg-bubble {
+        --bubble-width: 260px;
+        max-width: 260px;
+        font-size: 13px;
+        padding: 14px 38px 14px 16px;
+      }
+      .pg-mascot__glow {
+        width: 130px;
+        height: 130px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .pg-mascot__img-wrap {
+        --mascot-size: 130px;
+      }
+      .pg-bubble {
+        --bubble-width: 220px;
+        max-width: 220px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       MASCOT ASSISTANT MARKUP
+       ═══════════════════════════════════════════════════════════ -->
+  <div class="pg-mascot" id="pgMascot">
+    <div class="pg-bubble" id="pgBubble">
+      <button class="pg-bubble__close" id="pgBubbleClose" aria-label="Close">&times;</button>
+      <div class="pg-bubble__msg" id="pgBubbleMsg"></div>
+    </div>
+    <div class="pg-mascot__img-wrap" id="pgMascotImg">
+      <div class="pg-mascot__glow"></div>
+      <img
+        src="mascot.png.png"
+        alt="PromoGames AI Assistant"
+        loading="lazy"
+        draggable="false"
+      />
+    </div>
+  </div>
+
+  <script>
+    /* ═══════════════════════════════════════════════════════════
+       PROMOGAMES AI MASCOT ASSISTANT — CONFIGURATION
+       ═══════════════════════════════════════════════════════════ */
+    const PG_CONFIG = {
+      // Mascot image path (relative to this HTML file)
+      mascotImage: 'mascot.png.png',
+
+      // Bubble position relative to mascot: 'top-left' | 'top-right'
+      bubblePosition: 'top-left',
+
+      // Animation speeds (ms)
+      floatSpeed: 4000,        // mascot float cycle duration
+      glowPulseSpeed: 3000,    // glow pulse cycle
+      bounceDelay: 800,        // delay before bounce-in
+
+      // Message rotation interval (ms)
+      messageInterval: 5000,
+
+      // Bubble auto-hide delay after last interaction (ms)
+      bubbleAutoHide: 12000,
+
+      // Glow color (RGB)
+      glowColor: 'rgba(139, 92, 246, 0.3)',
+      glowColorFade: 'rgba(139, 92, 246, 0.08)',
+
+      // Mascot size (CSS value)
+      mascotSize: '220px',
+
+      // Bubble max width (CSS value)
+      bubbleWidth: '320px',
+
+      // Messages array — add new messages here
+      messages: [
+        '👋 Welcome to PromoGames!',
+        '🎁 Spin the wheel to win rewards!',
+        '🧠 Try today\'s quiz!',
+        '🏆 Earn PromoCoins by completing challenges.',
+        '🔥 Limited-time event is live!',
+        '💜 Need help? Click me anytime.',
+      ],
+    };
+
+    /* ═══════════════════════════════════════════════════════════
+       PROMOGAMES AI MASCOT ASSISTANT — ENGINE
+       ═══════════════════════════════════════════════════════════ */
+    (function () {
+      'use strict';
+
+      // ── DOM References ──
+      const root = document.getElementById('pgMascot');
+      const imgWrap = document.getElementById('pgMascotImg');
+      const bubble = document.getElementById('pgBubble');
+      const bubbleMsg = document.getElementById('pgBubbleMsg');
+      const bubbleClose = document.getElementById('pgBubbleClose');
+
+      if (!root || !imgWrap || !bubble || !bubbleMsg || !bubbleClose) return;
+
+      // ── Apply configuration as CSS custom properties ──
+      root.style.setProperty('--mascot-size', PG_CONFIG.mascotSize);
+      root.style.setProperty('--bubble-width', PG_CONFIG.bubbleWidth);
+      root.style.setProperty('--glow-color', PG_CONFIG.glowColor);
+      root.style.setProperty('--glow-color-fade', PG_CONFIG.glowColorFade);
+
+      // ── State ──
+      let isOpen = false;
+      let messageIndex = 0;
+      let rotationTimer = null;
+      let autoHideTimer = null;
+      let hoverPaused = false;
+
+      // ── Message Rotation ── */
+      function showMessage(index) {
+        const msg = PG_CONFIG.messages[index % PG_CONFIG.messages.length];
+
+        // Fade out current
+        bubbleMsg.classList.add('fading');
+
+        setTimeout(() => {
+          bubbleMsg.textContent = msg;
+          bubbleMsg.classList.remove('fading');
+        }, 300);
+      }
+
+      function startRotation() {
+        stopRotation();
+        rotationTimer = setInterval(() => {
+          if (!hoverPaused && isOpen) {
+            messageIndex = (messageIndex + 1) % PG_CONFIG.messages.length;
+            showMessage(messageIndex);
+          }
+        }, PG_CONFIG.messageInterval);
+      }
+
+      function stopRotation() {
+        if (rotationTimer) {
+          clearInterval(rotationTimer);
+          rotationTimer = null;
+        }
+      }
+
+      // ── Bubble Control ──
+      function openBubble() {
+        isOpen = true;
+        bubble.classList.add('visible');
+        showMessage(messageIndex);
+        startRotation();
+        resetAutoHide();
+      }
+
+      function closeBubble() {
+        isOpen = false;
+        bubble.classList.remove('visible');
+        stopRotation();
+        clearTimeout(autoHideTimer);
+      }
+
+      function toggleBubble() {
+        if (isOpen) {
+          closeBubble();
+        } else {
+          openBubble();
+        }
+      }
+
+      function resetAutoHide() {
+        clearTimeout(autoHideTimer);
+        autoHideTimer = setTimeout(() => {
+          if (isOpen && !hoverPaused) {
+            closeBubble();
+          }
+        }, PG_CONFIG.bubbleAutoHide);
+      }
+
+      // ── Event Listeners ──
+
+      // Click mascot to toggle bubble
+      imgWrap.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleBubble();
+      });
+
+      // Close button
+      bubbleClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeBubble();
+      });
+
+      // Click outside to close
+      document.addEventListener('click', (e) => {
+        if (isOpen && !root.contains(e.target)) {
+          closeBubble();
+        }
+      });
+
+      // Hover pauses rotation
+      imgWrap.addEventListener('mouseenter', () => { hoverPaused = true; });
+      imgWrap.addEventListener('mouseleave', () => { hoverPaused = false; });
+      bubble.addEventListener('mouseenter', () => { hoverPaused = true; });
+      bubble.addEventListener('mouseleave', () => { hoverPaused = false; });
+
+      // Prevent bubble clicks from propagating
+      bubble.addEventListener('click', (e) => { e.stopPropagation(); });
+
+      // ── Initialization ──
+
+      // Bounce-in on load
+      setTimeout(() => {
+        imgWrap.classList.add('bounce-in');
+
+        // Auto-open bubble after bounce
+        setTimeout(() => {
+          openBubble();
+        }, PG_CONFIG.bounceDelay + 400);
+      }, 200);
+
+    })();
+  </script>
+
+</body>
+</html>

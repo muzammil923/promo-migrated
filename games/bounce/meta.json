@@ -1,0 +1,17 @@
+{
+  "name": "Bounce",
+  "category": "bounce",
+  "description": "Physics-based platformer — jump, bounce, and collect coins across custom levels",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "bounce_settings",
+  "builderRoute": "bounce-builder",
+  "playerRoute": "bounce",
+  "tags": ["platformer", "physics", "levels"],
+  "difficulty": "medium"
+}

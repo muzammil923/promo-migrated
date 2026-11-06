@@ -1,0 +1,17 @@
+{
+  "name": "Flappy Bird",
+  "category": "flappy",
+  "description": "Flap through obstacles — how far can you go?",
+  "icon": "assets/icon.svg",
+  "hasBuilder": true,
+  "hasPlayer": true,
+  "hasDataPage": false,
+  "hasDataBOPage": false,
+  "hasBOLogsPage": false,
+  "hasRedemptionLogsPage": false,
+  "settingsTable": "flappy_settings",
+  "builderRoute": "flappy-builder",
+  "playerRoute": "flappy",
+  "tags": ["arcade", "reflex", "endless"],
+  "difficulty": "medium"
+}

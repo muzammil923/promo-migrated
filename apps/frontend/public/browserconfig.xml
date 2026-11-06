@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+  <msapplication>
+    <tile>
+      <square70x70logo src="/favicon.png"/>
+      <square150x150logo src="/favicon.png"/>
+      <wide310x150logo src="/favicon.png"/>
+      <square310x310logo src="/favicon.png"/>
+      <TileColor>#9210f6</TileColor>
+      <TileImage src="/favicon.png"/>
+    </tile>
+    <msapplication-TileColor>#07040f</msapplication-TileColor>
+    <msapplication-TileImage src="/favicon.png"/>
+    <msapplication-tooltip>PromoGames - Quick Games. Real Rewards.</msapplication-tooltip>
+    <msapplication-starturl="/"/>
+    <msapplication-navbutton-color>#9210f6</msapplication-navbutton-color>
+  </msapplication>
+</browserconfig>
