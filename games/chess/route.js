@@ -295,9 +295,13 @@ router.get('/room/:code/moves', async (req, res) => {
 router.post('/room/:code/end', async (req, res) => {
   try {
     const { result, player_color } = req.body;
+    const VALID_RESULTS = ['1-0', '0-1', '1/2-1/2', 'draw'];
+    if (result !== undefined && result !== null && !VALID_RESULTS.includes(String(result))) {
+      return res.status(400).json({ success: false, error: 'Invalid result' });
+    }
     const [rooms] = await db.query('SELECT * FROM chess_rooms WHERE room_code = ?', [req.params.code.toUpperCase()]);
     if (rooms.length === 0) return res.status(404).json({ success: false, error: 'Room not found' });
-    await db.query(`UPDATE chess_rooms SET status = 'finished', result = ?, active_clock_color = NULL, clock_started_at = NULL, updated_at = NOW() WHERE id = ?`, [result, rooms[0].id]);
+    await db.query(`UPDATE chess_rooms SET status = 'finished', result = ?, active_clock_color = NULL, clock_started_at = NULL, updated_at = NOW() WHERE id = ?`, [result || 'draw', rooms[0].id]);
     res.json({ success: true });
   } catch (err) {
     sendError(res, err);

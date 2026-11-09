@@ -601,17 +601,6 @@ export default function SpinPlayerPage({ gameData, sessionToken: initToken, sess
     return () => clearTimeout(timer)
   }, [phase, settings.redirect_url, settings.redirect_delay])
 
-  const pickWinner = useCallback(() => {
-    if (!segments.length) return null
-    const total = segments.reduce((s, seg) => s + (parseInt(seg.weight) || 1), 0)
-    let rand = Math.random() * total
-    for (let i = 0; i < segments.length; i++) {
-      rand -= (parseInt(segments[i].weight) || 1)
-      if (rand <= 0) return i
-    }
-    return segments.length - 1
-  }, [segments])
-
   const playTick = useCallback(() => {
     try {
       if (!tickAudioCtx.current) {
@@ -773,13 +762,6 @@ export default function SpinPlayerPage({ gameData, sessionToken: initToken, sess
               api.post('/play/session/complete', {
                 session_token: token,
                 score: winner.segment_type === 'prize' ? 1 : 0,
-                player_data: {
-                  segment_id: winner.id,
-                  segment_label: winner.label,
-                  segment_type: winner.segment_type,
-                  coupon_code: winner.coupon_code || null,
-                  prize_description: winner.prize_description || null,
-                }
               }).then(res => {
                 if (onComplete && res.data) {
                   window.__spinCompleteData = res.data
@@ -836,10 +818,33 @@ export default function SpinPlayerPage({ gameData, sessionToken: initToken, sess
       }
     }
 
-    const winnerIdx = pickWinner()
-    if (winnerIdx === null) { spinLock.current = false; return }
+    let result
+    try {
+      const spinRes = await api.post('/play/session/spin', { session_token: token })
+      if (!spinRes.data?.success) {
+        if (spinRes.data?.already_spun) setAlreadyPlayed(true)
+        else setErrorMsg(spinRes.data?.message || 'Could not spin')
+        spinLock.current = false
+        return
+      }
+      result = spinRes.data
+    } catch (err) {
+      setErrorMsg(err.response?.data?.message || 'Could not spin')
+      spinLock.current = false
+      return
+    }
 
-    const winner = segments[winnerIdx]
+    const winnerIdx = segments.findIndex(s => String(s.id) === String(result.segment_id))
+    if (winnerIdx < 0) { setErrorMsg('Spin result unavailable'); spinLock.current = false; return }
+
+    const winner = {
+      ...segments[winnerIdx],
+      segment_type: result.segment_type,
+      prize_description: result.prize_description,
+      coupon_code: result.coupon_code,
+      win_message: result.win_message,
+      lose_message: result.lose_message,
+    }
     const count = segments.length || 1
     const sliceAngle = 360 / count
     const targetSegMidDeg = (winnerIdx + 0.5) * sliceAngle

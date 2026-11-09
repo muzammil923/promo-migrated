@@ -284,40 +284,101 @@ export default function CrosswordPlayerPage({ gameData, sessionToken, sessionId,
   const cellRefs = useRef({})
   const firstClueClickRef = useRef(new Set()) // track words that have had their clue clicked
 
-  const revealLetter = () => {
-    if (!selectedWord) return
-    const newInputs = { ...inputs }
-    // Find the first empty or wrong letter in the word
-    for (let i = 0; i < selectedWord.word_text.length; i++) {
-      const r = selectedWord.direction === 'down'   ? selectedWord.start_row + i : selectedWord.start_row
-      const c = selectedWord.direction === 'across' ? selectedWord.start_col + i : selectedWord.start_col
-      const key = `${r},${c}`
-      if (newInputs[key] !== selectedWord.word_text[i]) {
-        newInputs[key] = selectedWord.word_text[i]
-        setInputs(newInputs)
-        // Check if this action solves the word
-        const isCorrect = selectedWord.word_text.split('').every((char, idx) => {
-          const wr = selectedWord.direction === 'down'   ? selectedWord.start_row + idx : selectedWord.start_row
-          const wc = selectedWord.direction === 'across' ? selectedWord.start_col + idx : selectedWord.start_col
-          return (newInputs[`${wr},${wc}`] || '').toUpperCase() === char
-        })
-        if (isCorrect) setCorrect(p => ({ ...p, [selectedWord.id]: true }))
-        return
+  const submitAndGrade = async (w, attempt) => {
+    if (!sessionToken) return null;
+    try {
+      const res = await fetch(`${API_BASE}/play/session/crossword-answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_token: sessionToken, crossword_word_id: w.id, answer_text: attempt })
+      });
+      const data = await res.json();
+      if (!data.success) return null;
+      const wasCorrect = !!correct[w.id];
+      const wasWrong = !!wrong[w.id];
+      if (data.is_correct) {
+        setCorrect((p) => ({ ...p, [w.id]: true }));
+        setWrong((p) => { const n = { ...p }; delete n[w.id]; return n; });
+        if (!wasCorrect) {
+          playSound(resolveSound(w.sound_correct_id) || resolveSound(settings?.sound_correct_id));
+          if (w.overlay_image_url) setActiveOverlay({ url: w.overlay_image_url });
+        }
+      } else {
+        setWrong((p) => ({ ...p, [w.id]: true }));
+        if (!wasWrong) playSound(resolveSound(w.sound_wrong_id) || resolveSound(settings?.sound_wrong_id));
       }
-    }
-  }
+      return data;
+    } catch (e) { return null; }
+  };
 
-  const revealWord = () => {
-    if (!selectedWord) return
-    const newInputs = { ...inputs }
-    for (let i = 0; i < selectedWord.word_text.length; i++) {
+  const revealLetter = async () => {
+    if (!selectedWord || !sessionToken) return;
+    const len = selectedWord.word_text?.length || 0;
+    if (!len) return;
+    let target = -1;
+    for (let i = 0; i < len; i++) {
       const r = selectedWord.direction === 'down'   ? selectedWord.start_row + i : selectedWord.start_row
       const c = selectedWord.direction === 'across' ? selectedWord.start_col + i : selectedWord.start_col
-      newInputs[`${r},${c}`] = selectedWord.word_text[i]
+      if (!(inputs[`${r},${c}`] || '')) { target = i; break }
     }
-    setInputs(newInputs)
-    setCorrect(p => ({ ...p, [selectedWord.id]: true }))
-  }
+    if (target === -1) return;
+    try {
+      const res = await fetch(`${API_BASE}/play/session/crossword-hint`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_token: sessionToken, crossword_word_id: selectedWord.id, index: target })
+      });
+      const data = await res.json();
+      if (!data.success || !data.letter) return;
+      const r = selectedWord.direction === 'down'   ? selectedWord.start_row + target : selectedWord.start_row
+      const c = selectedWord.direction === 'across' ? selectedWord.start_col + target : selectedWord.start_col
+      const newInputs = { ...inputs, [`${r},${c}`]: data.letter };
+      setInputs(newInputs);
+      let complete = true;
+      let attempt = '';
+      const fullLen = selectedWord.word_text?.length || 0;
+      for (let i = 0; i < fullLen; i++) {
+        const wr = selectedWord.direction === 'down'   ? selectedWord.start_row + i : selectedWord.start_row
+        const wc = selectedWord.direction === 'across' ? selectedWord.start_col + i : selectedWord.start_col
+        const char = (newInputs[`${wr},${wc}`] || '').toUpperCase();
+        if (!char) { complete = false; break; }
+        attempt += char;
+      }
+      if (complete) await submitAndGrade(selectedWord, attempt);
+    } catch (e) { /* noop */ }
+  };
+
+  const revealWord = async () => {
+    if (!selectedWord || !sessionToken) return;
+    try {
+      const res = await fetch(`${API_BASE}/play/session/crossword-hint`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_token: sessionToken, crossword_word_id: selectedWord.id, mode: 'word' })
+      });
+      const data = await res.json();
+      if (!data.success || !data.word_text) return;
+      const wordText = data.word_text;
+      const newInputs = { ...inputs };
+      const fullLen = wordText.length;
+      for (let i = 0; i < fullLen; i++) {
+        const r = selectedWord.direction === 'down'   ? selectedWord.start_row + i : selectedWord.start_row
+        const c = selectedWord.direction === 'across' ? selectedWord.start_col + i : selectedWord.start_col
+        newInputs[`${r},${c}`] = wordText[i];
+      }
+      setInputs(newInputs);
+      let complete = true;
+      let attempt = '';
+      for (let i = 0; i < fullLen; i++) {
+        const wr = selectedWord.direction === 'down'   ? selectedWord.start_row + i : selectedWord.start_row
+        const wc = selectedWord.direction === 'across' ? selectedWord.start_col + i : selectedWord.start_col
+        const char = (newInputs[`${wr},${wc}`] || '').toUpperCase();
+        if (!char) { complete = false; break; }
+        attempt += char;
+      }
+      if (complete) await submitAndGrade(selectedWord, attempt);
+    } catch (e) { /* noop */ }
+  };
 
   const { display: timerDisplay, remaining } = useTimer(!gameOver, settings?.time_limit_seconds || 0)
 
@@ -367,7 +428,7 @@ export default function CrosswordPlayerPage({ gameData, sessionToken, sessionId,
   }
 
   /* handle cell input */
-  const handleInput = (r, c, val) => {
+  const handleInput = async (r, c, val) => {
     // Prevent interaction if part of a solved word
     const isLocked = grid[r][c].wordIds.some(id => correct[id]);
     console.log('DEBUG handleInput: cell', r, c, 'wordIds:', grid[r][c].wordIds, 'correct state:', correct, 'isLocked:', isLocked);
@@ -395,68 +456,27 @@ export default function CrosswordPlayerPage({ gameData, sessionToken, sessionId,
       }
     }
 
-    // sync state updates for intersecting words
-    let nextCorrect = { ...correct }
-    let nextWrong = { ...wrong }
-    let wordsToUpdate = [] // { w, isCorrect }
-
+    // sync state updates for intersecting words via server-side grading
     if (ch) {
       const cellWordIds = grid[r][c].wordIds
-      for (const w of words.filter(w => cellWordIds.includes(w.id))) {
+      const touchedWords = words.filter(w => cellWordIds.includes(w.id))
+      for (const w of touchedWords) {
         let allFilled = true
         let attempt = ''
-        for (let i = 0; i < w.word_text.length; i++) {
+        const fullLen = w.word_text?.length || 0
+        for (let i = 0; i < fullLen; i++) {
           const wr = w.direction === 'down'   ? w.start_row + i : w.start_row
           const wc = w.direction === 'across' ? w.start_col + i : w.start_col
           const char = (newInputs[`${wr},${wc}`] || '').toUpperCase()
           if (!char) { allFilled = false; break }
           attempt += char
         }
-        
         if (allFilled) {
-          const isCorrect = attempt === w.word_text
-          const wasCorrect = !!correct[w.id]
-          const wasWrong = !!wrong[w.id]
-
-          if (isCorrect) {
-            nextCorrect[w.id] = true
-            delete nextWrong[w.id]
-            if (!wasCorrect) {
-              wordsToUpdate.push({ w, attempt, isCorrect: true })
-              playSound(resolveSound(w.sound_correct_id) || resolveSound(settings?.sound_correct_id))
-              // Trigger overlay if image exists
-              if (w.overlay_image_url) setActiveOverlay({ url: w.overlay_image_url })
-            }
-          } else {
-            nextWrong[w.id] = true
-            if (!wasWrong) {
-              wordsToUpdate.push({ w, attempt, isCorrect: false })
-              playSound(resolveSound(w.sound_wrong_id) || resolveSound(settings?.sound_wrong_id))
-            }
-          }
+          await submitAndGrade(w, attempt)
         }
       }
     }
-    
-    setCorrect(nextCorrect)
-    setWrong(nextWrong)
 
-    // Trigger server updates for newly corrected/wrong words
-    for (const { w, attempt, isCorrect } of wordsToUpdate) {
-      if (sessionToken) {
-        fetch(`${API_BASE}/play/session/crossword-answer`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            session_token: sessionToken,
-            crossword_word_id: w.id,
-            answer_text: attempt,
-            is_correct: isCorrect
-          })
-        }).catch(() => {})
-      }
-    }
-    
     setTimeout(() => { isTypingRef.current = false }, 50)
   }
 

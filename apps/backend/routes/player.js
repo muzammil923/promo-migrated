@@ -63,6 +63,56 @@ async function recordBestScore({ promoPlayerId, deviceId }, gameId, finalScore) 
   };
 }
 
+// ── Payload sanitisation ─────────────────────────────────────────────────────
+// Never send grading keys to the browser: correct options, short-answer keys,
+// spin prizes/coupons and their weights. The server keeps the source of truth
+// and grades answers in /session/answer + /session/crossword-answer.
+const SECRET_QUESTION_KEYS = ['answer_text', 'correct_option'];
+const SECRET_OPTION_KEYS = ['is_correct'];
+const SECRET_SPIN_KEYS = ['coupon_code', 'prize_description', 'segment_type', 'weight'];
+
+function sanitizeQuestionBank(questions) {
+  if (!Array.isArray(questions)) return;
+  for (const q of questions) {
+    if (!q || typeof q !== 'object') continue;
+    for (const key of SECRET_QUESTION_KEYS) delete q[key];
+    if (Array.isArray(q.options)) {
+      for (const opt of q.options) {
+        if (!opt || typeof opt !== 'object') continue;
+        for (const key of SECRET_OPTION_KEYS) delete opt[key];
+      }
+    }
+  }
+}
+
+function sanitizeSpinSegments(segments) {
+  if (!Array.isArray(segments)) return;
+  for (const seg of segments) {
+    if (!seg || typeof seg !== 'object') continue;
+    for (const key of SECRET_SPIN_KEYS) delete seg[key];
+  }
+}
+
+function sanitizeCrosswordWords(words) {
+  if (!Array.isArray(words)) return;
+  for (const w of words) {
+    if (!w || typeof w !== 'object') continue;
+    if (typeof w.word_text === 'string') {
+      const len = w.word_text.length;
+      w.word_length = len;
+      w.word_text = '#'.repeat(len);
+    }
+  }
+}
+
+function sanitizeGamePayload(game) {
+  if (!game || typeof game !== 'object') return game;
+  sanitizeQuestionBank(game.questions);
+  sanitizeSpinSegments(game.segments);
+  if (game.category === 'crossword') sanitizeCrosswordWords(game.words);
+  return game;
+}
+
 // Award Promo Coins for a completed session once — handled by the central
 // transactional service (lib/promocoins.js) which enforces idempotency via a
 // row lock + the pc_transactions(session_id, type) unique index.
@@ -81,6 +131,12 @@ router.get('/game-data/:gameId', async (req, res) => {
     );
     if (gameRows.length === 0) return res.status(404).json({ success: false, message: 'Game not found' });
     const game = gameRows[0];
+
+    const _sendJson = res.json.bind(res);
+    res.json = (body) => {
+      if (body && typeof body === 'object' && body.game) sanitizeGamePayload(body.game);
+      return _sendJson(body);
+    };
 
     const baseUrl = `${req.protocol}://${req.get('host')}`;
     const toAbs = (url) => {
@@ -215,8 +271,11 @@ router.get('/:gameName/:companyName', async (req, res) => {
     // player pages can show the true record instead of a per-player best.
     const _sendJson = res.json.bind(res);
     res.json = (body) => {
-      if (body && typeof body === 'object' && body.game && typeof body.game.high_score !== 'number') {
-        body.game.high_score = Number(game.high_score) || 0;
+      if (body && typeof body === 'object' && body.game) {
+        sanitizeGamePayload(body.game);
+        if (typeof body.game.high_score !== 'number') {
+          body.game.high_score = Number(game.high_score) || 0;
+        }
       }
       return _sendJson(body);
     };
@@ -1327,24 +1386,111 @@ router.post('/session/start', async (req, res) => {
 });
 
 // ── Quiz / survey answer ──────────────────────────────────────────────────────
+// Correctness is ALWAYS computed from the database. The client may not assert
+// is_correct, and each question can only be answered once per session.
 router.post('/session/answer', async (req, res) => {
-  const { session_token, question_id, option_id, option_ids, is_correct, question_type, answer_text } = req.body;
+  const { session_token, question_id, option_id, option_ids, question_type, answer_text } = req.body;
   try {
+    if (!session_token) return res.status(400).json({ success: false, message: 'session_token is required' });
     const [sessions] = await db.query('SELECT * FROM player_sessions WHERE session_token = ?', [session_token]);
     if (sessions.length === 0) return res.status(404).json({ success: false, message: 'Session not found' });
     const session = sessions[0];
+
+    const [gameRows] = await db.query('SELECT category FROM games WHERE id = ?', [session.game_id]);
+    const category = gameRows[0]?.category || null;
+
+    let graded; // { question_id, is_correct, correct_option_id, scored }
+
+    if (category === 'soundify' || question_type === 'soundify') {
+      const [songs] = await db.query(
+        'SELECT id, correct_option FROM soundify_songs WHERE id = ? AND game_id = ?',
+        [question_id, session.game_id]
+      );
+      if (songs.length === 0) return res.status(400).json({ success: false, message: 'Invalid question' });
+      const correct = Number(songs[0].correct_option) || 0;
+      const chosen = (option_id === null || option_id === undefined) ? null : Number(option_id);
+      graded = {
+        question_id: songs[0].id,
+        // soundify stores 1-based option numbers, the client sends 0-based index
+        is_correct: chosen !== null && (chosen === correct || chosen + 1 === correct),
+        correct_option_id: correct,
+        scored: true,
+      };
+    } else {
+      const [qRows] = await db.query(
+        'SELECT id, question_type, answer_text, answer_is_number FROM questions WHERE id = ? AND game_id = ?',
+        [question_id, session.game_id]
+      );
+      if (qRows.length === 0) return res.status(400).json({ success: false, message: 'Invalid question' });
+      const q = qRows[0];
+      const [opts] = await db.query(
+        'SELECT id, is_correct FROM options WHERE question_id = ? ORDER BY option_order',
+        [q.id]
+      );
+      const correctOpt = opts.find(o => !!o.is_correct) || null;
+      let isCorrect = false;
+      let scored = q.question_type === 'right_wrong';
+
+      const chosenOptions = [];
+      if (option_ids !== undefined && option_ids !== null) {
+        const arr = Array.isArray(option_ids) ? option_ids : [option_ids];
+        for (const id of arr) {
+          const chosen = opts.find(o => Number(o.id) === Number(id));
+          if (!chosen) return res.status(400).json({ success: false, message: 'Invalid option' });
+          chosenOptions.push(chosen);
+        }
+      } else if (option_id !== null && option_id !== undefined) {
+        const chosen = opts.find(o => Number(o.id) === Number(option_id));
+        if (!chosen) return res.status(400).json({ success: false, message: 'Invalid option' });
+        chosenOptions.push(chosen);
+      }
+      if (chosenOptions.length > 0) {
+        isCorrect = chosenOptions.some(o => !!o.is_correct);
+      } else if (answer_text !== undefined && answer_text !== null && q.answer_text !== undefined && q.answer_text !== null) {
+        const left = String(answer_text).trim();
+        const right = String(q.answer_text).trim();
+        isCorrect = q.answer_is_number
+          ? parseFloat(left) === parseFloat(right)
+          : left.toLowerCase() === right.toLowerCase();
+        scored = true;
+      }
+
+      graded = {
+        question_id: q.id,
+        is_correct: isCorrect,
+        correct_option_id: correctOpt ? correctOpt.id : null,
+        scored,
+      };
+    }
+
+    // One answer per question per session (blocks score farming / replays).
+    const [prev] = await db.query(
+      'SELECT is_correct FROM player_answers WHERE session_id = ? AND question_id = ? LIMIT 1',
+      [session.id, graded.question_id]
+    );
+    if (prev.length > 0) {
+      return res.json({
+        success: true,
+        is_correct: !!prev[0].is_correct,
+        correct_option_id: graded.correct_option_id,
+        duplicate: true,
+      });
+    }
+
     const storeOptionIds = Array.isArray(option_ids) ? JSON.stringify(option_ids) : (option_ids ? JSON.stringify([option_ids]) : null);
     await db.query(
       'INSERT INTO player_answers (session_id, question_id, option_id, option_ids, answer_text, is_correct, question_type) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [session.id, question_id, option_id || null, storeOptionIds, answer_text || null, is_correct === true ? 1 : 0, question_type || null]
+      [session.id, graded.question_id, option_id || null, storeOptionIds, answer_text || null, graded.is_correct ? 1 : 0, question_type || null]
     );
-    if (question_type === 'right_wrong' && is_correct) {
-      await db.query('UPDATE player_sessions SET score = score + 1 WHERE id = ?', [session.id]);
-    }
-    if (question_type === 'right_wrong') {
+
+    if (graded.scored) {
       await db.query('UPDATE player_sessions SET total_scoreable = total_scoreable + 1 WHERE id = ?', [session.id]);
+      if (graded.is_correct) {
+        await db.query('UPDATE player_sessions SET score = score + 1 WHERE id = ?', [session.id]);
+      }
     }
-    res.json({ success: true });
+
+    res.json({ success: true, is_correct: graded.is_correct, correct_option_id: graded.correct_option_id });
   } catch (err) {
     console.error('Answer error:', err);
     sendError(res, err);
@@ -1352,17 +1498,36 @@ router.post('/session/answer', async (req, res) => {
 });
 
 // ── Crossword word answer ─────────────────────────────────────────────────────
+// Correctness is computed from the stored word; the client's is_correct flag is
+// ignored. A word only ever scores once per session.
 router.post('/session/crossword-answer', async (req, res) => {
-  const { session_token, crossword_word_id, answer_text, is_correct } = req.body;
+  const { session_token, crossword_word_id, answer_text } = req.body;
   try {
+    if (!session_token) return res.status(400).json({ success: false, message: 'session_token is required' });
     const [sessions] = await db.query('SELECT * FROM player_sessions WHERE session_token = ?', [session_token]);
     if (sessions.length === 0) return res.status(404).json({ success: false, message: 'Session not found' });
     const session = sessions[0];
 
+    const [words] = await db.query(
+      'SELECT id, word_text FROM crossword_words WHERE id = ? AND game_id = ?',
+      [crossword_word_id, session.game_id]
+    );
+    if (words.length === 0) return res.status(400).json({ success: false, message: 'Invalid crossword word' });
+
+    const isCorrect = String(answer_text || '').trim().toUpperCase() === String(words[0].word_text || '').toUpperCase();
+
     // Store using question_id slot (crossword_word_id maps to question_id column)
+    const [prev] = await db.query(
+      'SELECT is_correct FROM player_answers WHERE session_id = ? AND question_id = ? LIMIT 1',
+      [session.id, words[0].id]
+    );
+    if (prev.length > 0) {
+      return res.json({ success: true, is_correct: !!prev[0].is_correct, duplicate: true });
+    }
+
     await db.query(
-      'INSERT INTO player_answers (session_id, question_id, option_id, is_correct) VALUES (?, ?, ?, ?)',
-      [session.id, crossword_word_id, null, is_correct ? 1 : 0]
+      'INSERT INTO player_answers (session_id, question_id, option_id, answer_text, is_correct, question_type) VALUES (?, ?, ?, ?, ?, ?)',
+      [session.id, words[0].id, null, String(answer_text || '').slice(0, 500), isCorrect ? 1 : 0, 'crossword']
     );
 
     // Always count as scoreable; correct ones get a point
@@ -1370,13 +1535,112 @@ router.post('/session/crossword-answer', async (req, res) => {
       'UPDATE player_sessions SET total_scoreable = total_scoreable + 1 WHERE id = ?',
       [session.id]
     );
-    if (is_correct) {
+    if (isCorrect) {
       await db.query('UPDATE player_sessions SET score = score + 1 WHERE id = ?', [session.id]);
     }
 
-    res.json({ success: true });
+    res.json({ success: true, is_correct: isCorrect });
   } catch (err) {
     console.error('Crossword answer error:', err);
+    sendError(res, err);
+  }
+});
+
+// ── Crossword hint ────────────────────────────────────────────────────────────
+// The word list is masked in the public payload, so hints must be requested per
+// letter (or per word) and are only served when the game allows hints.
+router.post('/session/crossword-hint', async (req, res) => {
+  const { session_token, crossword_word_id, index, mode } = req.body;
+  try {
+    if (!session_token) return res.status(400).json({ success: false, message: 'session_token is required' });
+    const [sessions] = await db.query('SELECT * FROM player_sessions WHERE session_token = ?', [session_token]);
+    if (sessions.length === 0) return res.status(404).json({ success: false, message: 'Session not found' });
+    const session = sessions[0];
+
+    const [settings] = await db.query(
+      'SELECT allow_hints FROM crossword_settings WHERE game_id = ? LIMIT 1',
+      [session.game_id]
+    );
+    if (settings.length > 0 && Number(settings[0].allow_hints) === 0) {
+      return res.status(403).json({ success: false, message: 'Hints are disabled for this game' });
+    }
+
+    const [words] = await db.query(
+      'SELECT id, word_text FROM crossword_words WHERE id = ? AND game_id = ?',
+      [crossword_word_id, session.game_id]
+    );
+    if (words.length === 0) return res.status(400).json({ success: false, message: 'Invalid crossword word' });
+
+    const answer = String(words[0].word_text || '');
+    if (mode === 'word') {
+      return res.json({ success: true, word_text: answer });
+    }
+
+    const idx = Number(index);
+    if (!Number.isInteger(idx) || idx < 0 || idx >= answer.length) {
+      return res.status(400).json({ success: false, message: 'Invalid letter index' });
+    }
+    res.json({ success: true, index: idx, letter: answer[idx] });
+  } catch (err) {
+    console.error('Crossword hint error:', err);
+    sendError(res, err);
+  }
+});
+
+// ── Spin result ───────────────────────────────────────────────────────────────
+// The winning segment (and therefore any coupon/prize) is chosen server-side.
+// The browser only receives the outcome once its session has actually spun.
+router.post('/session/spin', async (req, res) => {
+  const { session_token } = req.body;
+  try {
+    if (!session_token) return res.status(400).json({ success: false, message: 'session_token is required' });
+    const [sessions] = await db.query('SELECT * FROM player_sessions WHERE session_token = ?', [session_token]);
+    if (sessions.length === 0) return res.status(404).json({ success: false, message: 'Session not found' });
+    const session = sessions[0];
+
+    const [gameRows] = await db.query('SELECT category FROM games WHERE id = ?', [session.game_id]);
+    if (gameRows[0]?.category !== 'spin') {
+      return res.status(400).json({ success: false, message: 'Not a spin game' });
+    }
+
+    const [settingsRows] = await db.query('SELECT spin_mode FROM spin_settings WHERE game_id = ?', [session.game_id]);
+    const spinMode = settingsRows[0]?.spin_mode || 'once';
+
+    let data = {};
+    try { data = typeof session.player_data === 'string' ? JSON.parse(session.player_data || '{}') : (session.player_data || {}); } catch {}
+    if (spinMode !== 'unlimited' && data.spin_result) {
+      return res.status(409).json({ success: false, already_spun: true, message: 'You have already spun' });
+    }
+
+    const [segments] = await db.query(
+      'SELECT * FROM spin_segments WHERE game_id = ? ORDER BY segment_order',
+      [session.game_id]
+    );
+    if (segments.length === 0) return res.status(400).json({ success: false, message: 'No segments configured' });
+
+    const total = segments.reduce((sum, seg) => sum + (Number(seg.weight) || 1), 0) || segments.length;
+    let rand = Math.random() * total;
+    let winner = segments[segments.length - 1];
+    for (const seg of segments) {
+      rand -= (Number(seg.weight) || 1);
+      if (rand <= 0) { winner = seg; break; }
+    }
+
+    const result = {
+      segment_id: winner.id,
+      label: winner.label,
+      segment_type: winner.segment_type,
+      prize_description: winner.prize_description || null,
+      coupon_code: winner.coupon_code || null,
+      win_message: winner.win_message || null,
+      lose_message: winner.lose_message || null,
+    };
+    data.spin_result = result;
+    await db.query('UPDATE player_sessions SET player_data = ? WHERE id = ?', [JSON.stringify(data), session.id]);
+
+    res.json({ success: true, ...result, won: winner.segment_type === 'prize' });
+  } catch (err) {
+    console.error('Spin result error:', err);
     sendError(res, err);
   }
 });
@@ -1475,7 +1739,7 @@ router.post('/record-score', async (req, res) => {
     const info = await recordBestScore(
       { promoPlayerId: getPromoPlayerId(req), deviceId },
       gameId,
-      Math.floor(rawScore)
+      Math.min(Math.floor(rawScore), 1000000000)
     );
     res.json({ success: true, high_score: info.high_score, player_best: info.player_best, is_new_best: info.is_new_best });
   } catch (err) {
@@ -1486,18 +1750,50 @@ router.post('/record-score', async (req, res) => {
 router.post('/session/complete', async (req, res) => {
   const { session_token, score, player_data } = req.body;
   try {
+    if (!session_token) return res.status(400).json({ success: false, message: 'session_token is required' });
     const [sessions] = await db.query('SELECT * FROM player_sessions WHERE session_token = ?', [session_token]);
     if (sessions.length === 0) return res.status(404).json({ success: false, message: 'Session not found' });
 
     const session = sessions[0];
 
-    // Merge player_data
-    let existingData = typeof session.player_data === 'string' ? JSON.parse(session.player_data) : (session.player_data || {});
+    // Idempotent: a completed session can never be completed (and rewarded /
+    // redeemed) twice. Return the stored result instead of re-running hooks.
+    if (session.completed) {
+      const [gRows] = await db.query('SELECT redirect_url FROM games WHERE id = ?', [session.game_id]);
+      let stored = {};
+      try { stored = typeof session.player_data === 'string' ? JSON.parse(session.player_data || '{}') : (session.player_data || {}); } catch {}
+      return res.json({
+        success: true,
+        session,
+        email_sent: session.email_sent === 1,
+        score_info: null,
+        pc_reward: { success: true, rewarded: false, reason: 'already_completed' },
+        redirect_url: gRows[0]?.redirect_url || null,
+        spin_result: stored.spin_result || null,
+      });
+    }
+
+    const [gameRows] = await db.query('SELECT category FROM games WHERE id = ?', [session.game_id]);
+    const category = gameRows[0]?.category || null;
+
+    // Merge player_data; server-authoritative spin outcome always wins.
+    let existingData = {};
+    try { existingData = typeof session.player_data === 'string' ? JSON.parse(session.player_data || '{}') : (session.player_data || {}); } catch {}
     const mergedData = { ...existingData, ...(player_data || {}) };
+    if (existingData.spin_result) mergedData.spin_result = existingData.spin_result;
+
+    // Quiz/crossword scores are maintained by the DB-graded answer endpoints.
+    // Arcade scores still come from the client, but are clamped to a safe range.
+    const trustClientScore = !['quiz', 'crossword'].includes(category);
+    const effectiveScore = trustClientScore
+      ? Math.min(Math.max(parseInt(score, 10) || 0, 0), 1000000000)
+      : (parseInt(session.score, 10) || 0);
+
+    session.score = effectiveScore;
 
     await db.query(
       'UPDATE player_sessions SET completed = 1, completed_at = NOW(), score = ?, player_data = ? WHERE id = ?',
-      [score !== undefined ? score : session.score, JSON.stringify(mergedData), session.id]
+      [effectiveScore, JSON.stringify(mergedData), session.id]
     );
 
     const [games]          = await db.query('SELECT * FROM games WHERE id = ?', [session.game_id]);
@@ -1624,7 +1920,7 @@ router.post('/session/complete', async (req, res) => {
     // Records for logged-in players (promo_player_id) AND guests (device_id),
     // as long as a positive score was reported. games.high_score always updated.
     let scoreInfo = null;
-    const finalScore = parseInt(score !== undefined ? score : session.score, 10) || 0;
+    const finalScore = parseInt(session.score, 10) || 0;
     if (finalScore > 0 && (session.promo_player_id || session.device_id)) {
       try {
         scoreInfo = await recordBestScore(
@@ -1770,6 +2066,7 @@ router.post('/session/complete', async (req, res) => {
       score_info: scoreInfo,
       pc_reward: pcReward,
       redirect_url: games[0]?.redirect_url || null,
+      spin_result: mergedData.spin_result || null,
     });
   } catch (err) {
     console.error('Complete session error:', err);
@@ -1896,8 +2193,11 @@ router.get('/:gameName', async (req, res) => {
     // player pages can show the true record instead of a per-player best.
     const _sendJson = res.json.bind(res);
     res.json = (body) => {
-      if (body && typeof body === 'object' && body.game && typeof body.game.high_score !== 'number') {
-        body.game.high_score = Number(game.high_score) || 0;
+      if (body && typeof body === 'object' && body.game) {
+        sanitizeGamePayload(body.game);
+        if (typeof body.game.high_score !== 'number') {
+          body.game.high_score = Number(game.high_score) || 0;
+        }
       }
       return _sendJson(body);
     };

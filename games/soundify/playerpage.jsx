@@ -219,7 +219,6 @@ export default function SoundifyPlayerPage({ gameData, sessionToken: initToken, 
         session_token: sessionToken,
         question_id: song.id,
         option_id: optIdx,
-        is_correct: isCorrect,
         question_type: 'soundify'
       }).catch(() => {})
     } catch {}

@@ -114,7 +114,7 @@ function SubmittingPopup({ primaryColor, ff }) {
 }
 
 export default function QuizPlayerPage({
-  game, currentQ, sessionToken, answered, selectedOpt, selectValue, checkedOpts,
+  game, currentQ, sessionToken, answered, revealedCorrectId, selectedOpt, selectValue, checkedOpts,
   shortAnswerText, score, totalScoreable, completing, timeLeft, questionKey,
   overlayState, overlayData, showNextBtn, primaryColor, ff, s,
   showContinueBtn, qImgWrapRef, flyOutRef,
@@ -169,7 +169,7 @@ export default function QuizPlayerPage({
     const isRightWrong = question.question_type === 'right_wrong'
     const isSelected = currentSelectedOpt?.id === opt.id
     if (isRightWrong) {
-      if (opt.is_correct) return { bg: '#22c55e', text: '#fff', border: `${borderWidth}px solid #16a34a`, radius, gradient, shadow: '0 4px 20px rgba(34,197,94,0.45)', opacity: 1, scale: 'scale(1)' }
+      if (revealedCorrectId != null && String(opt.id) === String(revealedCorrectId)) return { bg: '#22c55e', text: '#fff', border: `${borderWidth}px solid #16a34a`, radius, gradient, shadow: '0 4px 20px rgba(34,197,94,0.45)', opacity: 1, scale: 'scale(1)' }
       else if (isSelected) return { bg: '#ef4444', text: '#fff', border: `${borderWidth}px solid #dc2626`, radius, gradient, shadow: '0 4px 20px rgba(239,68,68,0.45)', opacity: 1, scale: 'scale(0.97)' }
       else return { bg: '#ef4444', text: '#fff', border: `${borderWidth}px solid #dc2626`, radius, gradient, shadow: 'none', opacity: 0.45, scale: 'scale(0.97)' }
     } else {

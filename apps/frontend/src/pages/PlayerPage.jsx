@@ -1,3 +1,4 @@
+import { lazy, useState, useEffect, useRef, useCallback, useMemo, useContext, useReducer } from 'react'
 import LogoLoader from '../components/LogoLoader'
 
 import useTTS from '../hooks/useTTS'
@@ -357,6 +358,7 @@ export default function PlayerPage() {
   const [selectValue, setSelectValue] = useState('')
   const [shortAnswerText, setShortAnswerText] = useState('')
   const [answered, setAnswered] = useState(false)
+  const [revealedCorrectId, setRevealedCorrectId] = useState(null)
   const [score, setScore] = useState(0)
   const [totalScoreable, setTotalScoreable] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -1023,6 +1025,7 @@ export default function PlayerPage() {
       setSelectValue('')
       setShortAnswerText('')
       setAnswered(false)
+      setRevealedCorrectId(null)
       setQuestionKey(k => k + 1)
     }
   }, [completeSession])
@@ -1067,13 +1070,25 @@ export default function PlayerPage() {
   if (videoEl) { try { videoEl.muted = true; videoEl.pause() } catch {} }
 
   const question = questions[currentQ]
-  const isCorrect = question.question_type === 'right_wrong' ? !!opt.is_correct : null
   const isLastQ = currentQ + 1 >= questions.length
   const soundMap = game.soundMap || {}
   const settingsObj = game.settings || {}
 
+  // Correctness is decided by the server, never by the client payload.
+  let serverCorrect = false
+  let correctOptionId = null
+  try {
+    const ans = await api.post('/play/session/answer', {
+      session_token: token, question_id: question.id,
+      option_id: opt.id, question_type: question.question_type
+    })
+    serverCorrect = ans.data?.is_correct === true
+    correctOptionId = ans.data?.correct_option_id ?? null
+  } catch {}
+  setRevealedCorrectId(correctOptionId)
+
   if (question.question_type === 'right_wrong') {
-    if (isCorrect) {
+    if (serverCorrect) {
       playSound(resolveSound(settingsObj.sound_correct_id, soundMap))
       setScore(s => s + 1)
     } else {
@@ -1082,13 +1097,6 @@ export default function PlayerPage() {
   } else {
     playSound(resolveSound(question.sound_neutral_id, soundMap))
   }
-
-  try {
-    await api.post('/play/session/answer', {
-      session_token: token, question_id: question.id,
-      option_id: opt.id, is_correct: isCorrect, question_type: question.question_type
-    })
-  } catch {}
 
   // ── Overlay or advance ──
   if (opt.option_overlay_image_url) {
@@ -1182,22 +1190,15 @@ export default function PlayerPage() {
     const settingsObj = game.settings || {}
     const playerAnswer = shortAnswerText.trim()
 
-    // Compare answer
-    let isCorrect = false
-    if (question.answer_is_number) {
-      isCorrect = parseFloat(playerAnswer) === parseFloat(question.answer_text)
-    } else {
-      isCorrect = playerAnswer.toLowerCase() === (question.answer_text || '').toLowerCase()
-    }
-
     playSound(resolveSound(question.sound_neutral_id, soundMap))
 
     try {
-      await api.post('/play/session/answer', {
+      const ans = await api.post('/play/session/answer', {
         session_token: sessionToken, question_id: question.id,
-        option_id: null, is_correct: isCorrect, question_type: question.question_type,
+        option_id: null, question_type: question.question_type,
         answer_text: playerAnswer
       })
+      if (ans.data?.is_correct) setScore(s => s + 1)
     } catch {}
 
     setTimeout(() => doAdvance(isLastQ, sessionToken), 1200)
@@ -1227,7 +1228,7 @@ export default function PlayerPage() {
     const isSelected = currentSelectedOpt?.id === opt.id
 
     if (isRightWrong) {
-      if (opt.is_correct) {
+      if (revealedCorrectId != null && String(opt.id) === String(revealedCorrectId)) {
         // Always show correct option green — even when wrong answer selected
         return { bg: '#22c55e', text: '#fff', border: '2px solid #16a34a', shadow: '0 4px 20px rgba(34,197,94,0.45)', opacity: 1, scale: 'scale(1)' }
       } else if (isSelected) {
@@ -1404,6 +1405,7 @@ export default function PlayerPage() {
         sessionToken={sessionToken}
         questions={questions}
         answered={answered}
+        revealedCorrectId={revealedCorrectId}
         selectedOpt={selectedOpt}
         selectValue={selectValue}
         checkedOpts={checkedOpts}
