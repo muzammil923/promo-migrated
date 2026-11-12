@@ -340,7 +340,7 @@ const handleEmailSubmit = async () => {
     if (otp.length < 4) return setError('Enter the 4-digit code')
     clearErr(); setLoading(true)
     try {
-      const { data } = await api.post('/pauth/verify-otp', { email, otp })
+       const { data } = await api.post('/pauth/verify-otp', { email, otp, register: true })
       if (data.type === 'player') {
         storeAuth(data.token, { ...data.player, avatar_id: form.avatar_id })
         navigate('/')

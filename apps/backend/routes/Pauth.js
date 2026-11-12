@@ -243,6 +243,13 @@ router.post('/verify-otp', async (req, res) => {
       // internal_team table may not exist yet — skip silently
     }
 
+    // ── Registration-form flow (LoginPage): hand back a pending token so the
+    // frontend can collect name/username/dob/etc. before creating the account.
+    if (req.body?.register === true) {
+      const tempToken = jwt.sign({ email, role: 'pending' }, env.JWT_SECRET, { expiresIn: '15m' });
+      return res.json({ success: true, type: 'new', tempToken });
+    }
+
     // ── Instant signup: create the player right here with an incomplete profile ──
     // No forced name/username form — they're logged in immediately, +100 PC
     // welcome bonus lands now, and profile details can be filled in later.

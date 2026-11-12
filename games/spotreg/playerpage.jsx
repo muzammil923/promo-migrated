@@ -222,7 +222,29 @@ function validateField(value, fieldType, isRequired) {
   return ''
 }
 
-function FieldInput({ field, value, error, touched, onChange, onBlur, accent }) {
+function isDobLabel(label) {
+  const t = String(label || '').trim().toLowerCase()
+  return /dob|date of birth|birth date|birthday|birth_date/.test(t)
+}
+
+function isAgeLabel(label) {
+  const t = String(label || '').trim().toLowerCase()
+  return /^age$/.test(t) || /\bage\b/.test(t) || /age[\s_]*(in[\s_]*)?years?/.test(t) || /years?[\s_]*old/.test(t)
+}
+
+function calcAge(dob) {
+  if (!dob) return ''
+  const birth = new Date(dob)
+  if (isNaN(birth.getTime())) return ''
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  if (age < 0) return ''
+  return String(age)
+}
+
+function FieldInput({ field, value, error, touched, onChange, onBlur, accent, disabled }) {
   const id = `srp-f-${field.id ?? field.field_label}`
   const showError = touched && error
 
@@ -264,8 +286,9 @@ function FieldInput({ field, value, error, touched, onChange, onBlur, accent }) 
             : 'text'}
           inputMode={field.field_type === 'phone' ? 'tel' : field.field_type === 'number' ? 'decimal' : undefined}
           value={value || ''} placeholder={field.field_label}
+          disabled={disabled}
           onChange={e => onChange(e.target.value)}
-          onBlur={onBlur} style={style}
+          onBlur={onBlur} style={{ ...style, opacity: disabled ? 0.7 : 1 }}
         />
       )}
 
@@ -409,11 +432,29 @@ export default function SpotRegPlayerPage() {
 
   /* ───────── Registration form ───────── */
   const handleFormChange = (label, value, fieldType, isRequired) => {
-    setFormData(prev => ({ ...prev, [label]: value }))
+    setFormData(prev => {
+      const next = { ...prev, [label]: value }
+      if (isDobLabel(label)) {
+        const ageField = (game?.formFields || []).find(f => isAgeLabel(f.field_label))
+        if (ageField) next[ageField.field_label] = calcAge(value)
+      }
+      return next
+    })
     if (formTouched[label]) {
       setFormErrors(prev => ({ ...prev, [label]: validateField(value, fieldType, isRequired) }))
     }
   }
+
+  useEffect(() => {
+    const fields = game?.formFields || []
+    const dobField = fields.find(f => isDobLabel(f.field_label))
+    const ageField = fields.find(f => isAgeLabel(f.field_label))
+    if (!dobField || !ageField) return
+    const age = calcAge(formData[dobField.field_label])
+    if (age && formData[ageField.field_label] !== age) {
+      setFormData(prev => ({ ...prev, [ageField.field_label]: age }))
+    }
+  }, [formData, game])
 
   const handleFormSubmit = async (e) => {
     e.preventDefault()
@@ -782,6 +823,7 @@ export default function SpotRegPlayerPage() {
                     error={formErrors[f.field_label]}
                     touched={formTouched[f.field_label]}
                     onChange={v => handleFormChange(f.field_label, v, f.field_type, f.is_required)}
+                    disabled={isAgeLabel(f.field_label) && (game?.formFields || []).some(x => isDobLabel(x.field_label))}
                     onBlur={() => {
                       setFormTouched(prev => ({ ...prev, [f.field_label]: true }))
                       setFormErrors(prev => ({

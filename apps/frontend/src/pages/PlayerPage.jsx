@@ -338,6 +338,28 @@ function validateField(value, fieldType, isRequired) {
   return ''
 }
 
+function isDobLabel(label) {
+  const t = String(label || '').trim().toLowerCase()
+  return /dob|date of birth|birth date|birthday|birth_date/.test(t)
+}
+
+function isAgeLabel(label) {
+  const t = String(label || '').trim().toLowerCase()
+  return /^age$/.test(t) || /\bage\b/.test(t) || /age[\s_]*(in[\s_]*)?years?/.test(t) || /years?[\s_]*old/.test(t)
+}
+
+function calcAge(dob) {
+  if (!dob) return ''
+  const birth = new Date(dob)
+  if (isNaN(birth.getTime())) return ''
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  if (age < 0) return ''
+  return String(age)
+}
+
 export default function PlayerPage() {
   const { gameName, companyName } = useParams()
   const [searchParams] = useSearchParams()
@@ -774,7 +796,14 @@ export default function PlayerPage() {
   }, [])
 
   const handleFieldChange = (label, value, fieldType, isRequired) => {
-    setFormData(prev => ({ ...prev, [label]: value }))
+    setFormData(prev => {
+      const next = { ...prev, [label]: value }
+      if (isDobLabel(label)) {
+        const ageField = (game?.formFields || []).find(f => isAgeLabel(f.field_label))
+        if (ageField) next[ageField.field_label] = calcAge(value)
+      }
+      return next
+    })
     if (formTouched[label]) {
       setFormErrors(prev => ({ ...prev, [label]: validateField(value, fieldType, isRequired) }))
     }
@@ -784,6 +813,17 @@ export default function PlayerPage() {
     setFormTouched(prev => ({ ...prev, [label]: true }))
     setFormErrors(prev => ({ ...prev, [label]: validateField(value, fieldType, isRequired) }))
   }
+
+  useEffect(() => {
+    const fields = game?.formFields || []
+    const dobField = fields.find(f => isDobLabel(f.field_label))
+    const ageField = fields.find(f => isAgeLabel(f.field_label))
+    if (!dobField || !ageField) return
+    const age = calcAge(formData[dobField.field_label])
+    if (age && formData[ageField.field_label] !== age) {
+      setFormData(prev => ({ ...prev, [ageField.field_label]: age }))
+    }
+  }, [formData, game])
 
   const handleFormSubmit = async (e) => {
     e.preventDefault()
@@ -1355,12 +1395,12 @@ export default function PlayerPage() {
                       style={{ ...inputStyle, resize: 'vertical' }} />
                   ) : (
                     <input id={fieldId} name={fieldId}
-                      type={f.field_type === 'phone' ? 'tel' : f.field_type === 'email' ? 'email' : f.field_type === 'number' ? 'number' : 'text'}
+                       type={f.field_type === 'phone' ? 'tel' : f.field_type === 'email' ? 'email' : f.field_type === 'number' ? 'number' : f.field_type === 'date' ? 'date' : 'text'}
                       value={val}
-                      disabled={fromProfile}
+                      disabled={fromProfile || (isAgeLabel(f.field_label) && (game.formFields || []).some(x => isDobLabel(x.field_label)))}
                       onChange={e => handleFieldChange(f.field_label, e.target.value, f.field_type, f.is_required)}
                       onBlur={e => handleFieldBlur(f.field_label, e.target.value, f.field_type, f.is_required)}
-                      style={{ ...inputStyle, opacity: fromProfile ? 0.7 : 1 }} />
+                      style={{ ...inputStyle, opacity: (fromProfile || (isAgeLabel(f.field_label) && (game.formFields || []).some(x => isDobLabel(x.field_label)))) ? 0.7 : 1 }} />
                   )}
                   <div style={{ height: 20, marginTop: 3 }}>
                     {hasErr && <span style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>⚠ {err}</span>}
